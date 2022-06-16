@@ -1,5 +1,5 @@
 ---
-title: "TFEA_ChIP_Rmarkdown_6_16_22"
+title: "TFEA_ChIP_Markdown_6_16_2022"
 author: "Ryan Brownlee"
 date: '2022-06-16'
 output: html_document
@@ -11,17 +11,9 @@ library(TFEA.ChIP) #Recall TFEA.ChIP package
 READY_TFEA_DATASET_TABLE <- preprocessInputData(READY_TFEA_DATASET)
 ```
 
-read in data
+rewad in data
 ```{r}
-#READY_TFEA_DATASET_orig <- read.csv(file = "/Users/mattr/Documents/Lasseigne_Lab_KURE/FULL_TFEA_DATASET.csv")
-
-upgenes <- read.csv(file = "/Users/mattr/Documents/Lasseigne_Lab_KURE/TFEA_Lasseigne_Lab_Brownlee/deseq2_upgenes.csv")
-
-str(upgenes)
-
-downgenes <- read.csv(file = "/Users/mattr/Documents/Lasseigne_Lab_KURE/TFEA_Lasseigne_Lab_Brownlee/deseq2_downgenes.csv")
-
-str(downgenes)
+READY_TFEA_DATASET_orig <- read.csv(file = "/Users/mattr/Documents/Lasseigne_Lab_KURE/FULL_TFEA_DATASET.csv")
 ```
 
 ```{r}
