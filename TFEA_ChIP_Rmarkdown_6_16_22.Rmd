@@ -108,12 +108,11 @@ Ready_upgenes_DROPPED<- tidyr::drop_na(Ready_upgenes)
 Ready_downgenes_DROPPED<- tidyr::drop_na(Ready_downgenes)
 ```
 
-
 #Ready_upgenes TFEA work up w/ENCODE
 ```{r}
 #geneIDintoentrezID
-Genes.Upreg <- Select_genes( Ready_upgenes, min_LFC = 1) #extract vector with names of upregulated genes
-Genes.upControl <- Select_genes(Ready_upgenes, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+Genes.Upreg <- Select_genes( Ready_upgenes_DROPPED, min_LFC = 1) #extract vector with names of upregulated genes
+Genes.upControl <- Select_genes(Ready_upgenes_DROPPED, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
 #extract vector with names of non-responsive genes
 CM_list_UP <- contingency_matrix(Genes.Upreg, Genes.upControl)
 #generates list of contingency tables, one per dataset
@@ -141,15 +140,15 @@ plot_CM(pval_mat_UP)
 ```{r}
 chip_index <- get_chip_index(encodeFilter = TRUE)
 #creates chip index of only ENCODE dataset
-GSEA_run(!is.na(Ready_upgenes$Genes), !is.na(Ready_upgenes$log2FoldChange), chip_index, get.RES = TRUE)
+GSEA_run(Ready_upgenes_DROPPED$Genes, Ready_upgenes_DROPPED$log2FoldChange, chip_index, get.RES = TRUE)
 # run GSEA analysis
 ```
 
 #Ready_downgenes TFEA work up w/ENCODE
 ```{r}
 #geneIDintoentrezID
-Genes.downreg <- Select_genes( Ready_downgenes, min_LFC = 1) #extract vector with names of upregulated genes
-Genes.downControl <- Select_genes(Ready_downgenes, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+Genes.downreg <- Select_genes( Ready_downgenes_DROPPED, min_LFC = 1) #extract vector with names of upregulated genes
+Genes.downControl <- Select_genes(Ready_downgenes_DROPPED, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
 #extract vector with names of non-responsive genes
 CM_list_down <- contingency_matrix(Genes.downreg, Genes.downControl)
 #generates list of contingency tables, one per dataset
@@ -177,6 +176,6 @@ plot_CM(pval_mat_down)
 ```{r}
 chip_index <- get_chip_index(encodeFilter = TRUE)
 #creates chip index of only ENCODE dataset
-GSEA_run(!is.na(Ready_downgenes$Genes), !is.na(Ready_downgenes$log2FoldChange), chip_index, get.RES = TRUE)
+GSEA_run(Ready_downgenes_DROPPED$Genes,Ready_downgenes_DROPPED$log2FoldChange, chip_index, get.RES = TRUE)
 # run GSEA analysis
 ```
