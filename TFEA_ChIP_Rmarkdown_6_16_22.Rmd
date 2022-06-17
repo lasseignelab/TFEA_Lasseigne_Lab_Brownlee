@@ -10,6 +10,14 @@ Libraries
 library(TFEA.ChIP) #Recall TFEA.ChIP package
 READY_TFEA_DATASET_TABLE <- preprocessInputData(READY_TFEA_DATASET)
 ```
+```{r}
+R.Version()
+```
+
+```{r}
+installed.packages()
+[names(sessionInfo()$otherPkgs), "Version"}]
+```
 
 read in data
 ```{r}
@@ -74,10 +82,11 @@ enstotaldataset_humandown <- left_join(x=ens_mouse2humandown, y= entrez_downgene
 View(enstotaldataset_humandown)
 
 ```
-#ADD Dplyr & Tibble
+#ADD Dplyr,ggplot2 & Tibble
 ```{r}
 library(dplyr)
 library(tibble)
+library(ggplot2)
 ```
 
 #Create Ready upgenes Dataframe
@@ -126,9 +135,9 @@ pval_mat_UPe <- getCMstats(CM_list_UPe, chip_index)
 ```
 
 ```{r}
-TF_ranking <- rankTFs(pval_mat_UP, rankMethod = "gsea", makePlot = TRUE)
+TF_rankingup <- rankTFs(pval_mat_UP, rankMethod = "gsea", makePlot = TRUE)
 #ranks the transcription factors for graphing
-TF_ranking[["TFranking_plot"]]
+TF_rankingup[["TFranking_plot"]]
 #Displays plot of TF ranking and enrichment scores
 ```
 
@@ -162,9 +171,9 @@ pval_mat_downe <- getCMstats(CM_list_UPe, chip_index)
 ```
 
 ```{r}
-TF_ranking <- rankTFs(pval_mat_down, rankMethod = "gsea", makePlot = TRUE)
+TF_rankingdown <- rankTFs(pval_mat_down, rankMethod = "gsea", makePlot = TRUE)
 #ranks the transcription factors for graphing
-TF_ranking[["TFranking_plot"]]
+TF_rankingdown[["TFranking_plot"]]
 #Displays plot of TF ranking and enrichment scores
 ```
 
