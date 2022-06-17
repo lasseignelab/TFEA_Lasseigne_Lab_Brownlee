@@ -24,28 +24,144 @@ downgenes <- read.csv(file = "/Users/mattr/Documents/Lasseigne_Lab_KURE/TFEA_Las
 str(downgenes)
 ```
 
+#download Biomart package
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("biomaRt")
+library(biomaRt)
+```
+
+#Mouse2Human ensemble conversion
+```{r}
+ens_annot <- read.csv(file = "/Users/mattr/Documents/Lasseigne_Lab_KURE/TFEA_Lasseigne_Lab_Brownlee/annot_ens_humanmouse.csv")
+
+#conversion table
+  ens_mouse2humanup <- merge(upgenes, ens_annot, by.x = "X", by.y = "Mouse.gene.stable.ID")
+  #biomart to convert human ens to human entrez
+  humanup <- useEnsembl("ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+  genesup <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id","entrezgene_id"), values = ens_mouse2humanup$Gene.stable.ID, mart = humanup)
+  
+  #names(ens_mouse2human) <- c("mouse_ensembl_gene_id", "LFC", "ensembl_gene_id")
+  #conv_tbl <- merge(genesup, ens_mouse2human, by = "ensembl_gene_id")
+  
+  #conversion table
+  ens_mouse2humandown <- merge(downgenes, ens_annot, by.x = "X", by.y = "Mouse.gene.stable.ID")
+  #biomart to convert human ens to human entrez
+  humandown <- useEnsembl("ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+  genesdown <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id","entrezgene_id"), values = ens_mouse2humandown$Gene.stable.ID, mart = humandown)
+  
+  #names(ens_mouse2human) <- c("mouse_ensembl_gene_id", "LFC", "ensembl_gene_id")
+  #conv_tbl <- merge(genesdown, ens_mouse2human, by = "ensembl_gene_id")
+```
+
+#geneIDconversion
+```{r}
+entrez_upgenes <- GeneID2entrez(upgenes$X, return.Matrix = TRUE, mode = "m2m")
+entrez_downgenes <- GeneID2entrez(downgenes$X, return.Matrix = TRUE, mode = "m2m" )
+```
+
+#Make Columns match eachother to avoid row error below
+```{r}
+colnames(ens_mouse2humanup)[1] <- "Genes"
+colnames(entrez_upgenes)[1] <- "Genes"
+colnames(ens_mouse2humandown)[1] <- "Genes"
+colnames(entrez_downgenes)[1] <- "Genes"
+enstotaldataset_humanup <- left_join(x=ens_mouse2humanup, y= entrez_upgenes, by = "Genes", copy = TRUE)
+View(enstotaldataset_humanup)
+enstotaldataset_humandown <- left_join(x=ens_mouse2humandown, y= entrez_downgenes, by = "Genes", copy = TRUE)
+View(enstotaldataset_humandown)
+
+```
+#ADD Dplyr & Tibble
+```{r}
+library(dplyr)
+library(tibble)
+```
+
+#Create Ready upgenes Dataframe
+```{r}
+Ready_upgenes <- data.frame(enstotaldataset_humanup$ENTREZ.ID, enstotaldataset_humanup$log2FoldChange, enstotaldataset_humanup$pvalue, enstotaldataset_humanup$padj)
+colnames(Ready_upgenes) <- c("Genes", "log2FoldChange", "pvalue", "pval.adj")
+View(Ready_upgenes)
+```
+
+#Create Ready downgenes dataframe
+```{r}
+Ready_downgenes <- data.frame(enstotaldataset_humandown$ENTREZ.ID, enstotaldataset_humandown$log2FoldChange, enstotaldataset_humandown$pvalue, enstotaldataset_humandown$padj)
+colnames(Ready_downgenes) <- c("Genes", "log2FoldChange", "pvalue", "pval.adj")
+View(Ready_downgenes)
+```
+
+#Ready_upgenes TFEA work up w/ENCODE
 ```{r}
 #geneIDintoentrezID
-Genes.Upreg <- Select_genes( READY_TFEA_DATASET_TABLE, min_LFC = 1) #extract vector with names of upregulated genes
-Genes.Control <- Select_genes(READY_TFEA_DATASET_TABLE, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+Genes.Upreg <- Select_genes( Ready_upgenes, min_LFC = 1) #extract vector with names of upregulated genes
+Genes.upControl <- Select_genes(Ready_upgenes, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
 #extract vector with names of non-responsive genes
-CM_list_UP <- contingency_matrix(Genes.Upreg, Genes.Control)
+CM_list_UP <- contingency_matrix(Genes.Upreg, Genes.upControl)
 #generates list of contingency tables, one per dataset
 pval_mat_UP <- getCMstats(CM_list_UP)
 #generates list of p-values
 chip_index <- get_chip_index(encodeFilter = TRUE) #select ENCODE datasets only
-CM_list_UPe <- contingency_matrix(Genes.Upreg, Genes.Control, chip_index)
+CM_list_UPe <- contingency_matrix(Genes.Upreg, Genes.upControl, chip_index)
 #generates a list of contingency tables
 pval_mat_UPe <- getCMstats(CM_list_UPe, chip_index)
 #Generates a list of p-values and ORs
+```
+
+```{r}
 TF_ranking <- rankTFs(pval_mat_UP, rankMethod = "gsea", makePlot = TRUE)
 #ranks the transcription factors for graphing
 TF_ranking[["TFranking_plot"]]
 #Displays plot of TF ranking and enrichment scores
+```
+
+```{r}
 plot_CM(pval_mat_UP)
 #plot p-values against ORs
+```
+
+```{r}
 chip_index <- get_chip_index(encodeFilter = TRUE)
 #creates chip index of only ENCODE dataset
-GSEA_run(!is.na(READY_TFEA_DATASET$Genes), !is.na(READY_TFEA_DATASET$log2FoldChange), chip_index, get.RES = TRUE)
+GSEA_run(!is.na(Ready_upgenes$Genes), !is.na(Ready_upgenes$log2FoldChange), chip_index, get.RES = TRUE)
+# run GSEA analysis
+```
+
+#Ready_downgenes TFEA work up w/ENCODE
+```{r}
+#geneIDintoentrezID
+Genes.downreg <- Select_genes( Ready_downgenes, min_LFC = 1) #extract vector with names of upregulated genes
+Genes.downControl <- Select_genes(Ready_downgenes, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+#extract vector with names of non-responsive genes
+CM_list_down <- contingency_matrix(Genes.downreg, Genes.downControl)
+#generates list of contingency tables, one per dataset
+pval_mat_down <- getCMstats(CM_list_UP)
+#generates list of p-values
+chip_index <- get_chip_index(encodeFilter = TRUE) #select ENCODE datasets only
+CM_list_downe <- contingency_matrix(Genes.downreg, Genes.downControl, chip_index)
+#generates a list of contingency tables
+pval_mat_downe <- getCMstats(CM_list_UPe, chip_index)
+#Generates a list of p-values and ORs
+```
+
+```{r}
+TF_ranking <- rankTFs(pval_mat_down, rankMethod = "gsea", makePlot = TRUE)
+#ranks the transcription factors for graphing
+TF_ranking[["TFranking_plot"]]
+#Displays plot of TF ranking and enrichment scores
+```
+
+```{r}
+plot_CM(pval_mat_down)
+#plot p-values against ORs
+```
+
+```{r}
+chip_index <- get_chip_index(encodeFilter = TRUE)
+#creates chip index of only ENCODE dataset
+GSEA_run(!is.na(Ready_downgenes$Genes), !is.na(Ready_downgenes$log2FoldChange), chip_index, get.RES = TRUE)
 # run GSEA analysis
 ```
