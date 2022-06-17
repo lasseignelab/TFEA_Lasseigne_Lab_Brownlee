@@ -94,6 +94,15 @@ colnames(Ready_downgenes) <- c("Genes", "log2FoldChange", "pvalue", "pval.adj")
 View(Ready_downgenes)
 ```
 
+#sort log2FoldChange for later analysis
+```{r}
+Ready_upgenes<- dplyr::arrange(Ready_upgenes, desc(log2FoldChange))
+Ready_downgenes<-dplyr::arrange(Ready_downgenes,log2FoldChange)
+View(Ready_upgenes)
+View(Ready_downgenes)
+```
+
+
 #Ready_upgenes TFEA work up w/ENCODE
 ```{r}
 #geneIDintoentrezID
