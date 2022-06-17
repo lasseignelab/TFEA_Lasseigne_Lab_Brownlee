@@ -102,6 +102,12 @@ View(Ready_upgenes)
 View(Ready_downgenes)
 ```
 
+#DROP all NA's
+```{r}
+Ready_upgenes_DROPPED<- tidyr::drop_na(Ready_upgenes)
+Ready_downgenes_DROPPED<- tidyr::drop_na(Ready_downgenes)
+```
+
 
 #Ready_upgenes TFEA work up w/ENCODE
 ```{r}
