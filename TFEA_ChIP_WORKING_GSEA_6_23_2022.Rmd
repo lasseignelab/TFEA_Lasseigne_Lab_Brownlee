@@ -1,0 +1,72 @@
+---
+title: "Working_GSEA_RUN"
+author: "Ryan Brownlee"
+date: '2022-06-23'
+output: html_document
+---
+Libraries
+```library(TFEA.ChIP)
+library(DESeq2)
+library(biomaRt)
+```
+Load in vignette data
+```{r}
+data( "hypoxia_DESeq", "hypoxia", package="TFEA.ChIP" ) # load example datasets
+hypoxia_table <- preprocessInputData( hypoxia_DESeq )
+head(hypoxia_table)
+```
+Load in our data
+```{r}
+alldegs <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/deseq2_fullres_39.csv")
+```
+Remove NAs from alldegs
+```{r}
+alldegs <- tidyr::drop_na(alldegs, log2FoldChange)
+```
+```{r}
+chip_index <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
+chip_index2 <- get_chip_index( encodeFilter = TRUE )
+```
+Mouse to human (ensembl)
+```{r}
+ens_annot <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/annot_ens_humanmouse.csv")
+  #conversion table
+degs_hom <- merge(alldegs, ens_annot, by.x = "X", by.y = "Mouse.gene.stable.ID")
+  #biomart to convert human ens to human entrez
+human <- useEnsembl("ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+#human ensembl to human entrez mapping
+genes <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id","entrezgene_id"), values = degs_hom$Gene.stable.ID, mart = human)
+```
+Merge entrez ID's back with differential expression data
+```{r}
+entrezdegs <- merge(degs_hom, genes, by.x = "Gene.stable.ID", by.y = "ensembl_gene_id")
+#remove missing entrez
+entrezdegs <- tidyr::drop_na(entrezdegs, entrezgene_id)
+```
+GSEA_run with pkd data
+```{r}
+#sort by log fold change for gsea
+entrezdegs <- dplyr::arrange(entrezdegs, desc(log2FoldChange))
+pkd_tf_gsea <- GSEA_run(as.character(entrezdegs$entrezgene_id), entrezdegs$log2FoldChange, chip_index2, get.RES = TRUE)
+```
+Visualization-pkd data
+```{r}
+TF.highlight <- c("SMARCE1", "E2F4")
+names(TF.highlight) <- c("SMARCE1", "E2F4")
+col <- c("red", "blue", "green")
+plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
+```
+Visualize plot_RES
+```{r}
+plot_RES(GSEA_result = pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, TF = c("SMARCE1", "E2F4"), Accession = c("ENCSR968QDP.SMARCE1.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000EVL.E2F4.HeLa-S3"))
+```
+
+
+```{r}
+R.Version()
+```
+```{r}
+installed.packages()
+[names(sessionInfo()$otherPkgs), "Version"}]
+```
+
