@@ -54,19 +54,9 @@ Visualization-pkd data
 TF.highlight <- c("SMARCE1", "E2F4")
 names(TF.highlight) <- c("SMARCE1", "E2F4")
 col <- c("red", "blue", "green")
-plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
+Test_plot<- plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
+Test_plot<- Test_plot %>% add_annotations(x=2765, y=0.46985, xref= "x", yref= "y", text = "ENCSR968QDP.SMARCE1.Hep-G2", xanchor='right', showarrow = F)
+Test_plot<- Test_plot %>% add_annotations(x=3661, y=0.42085, xref= "x", yref= "y", text = "ENCSR000DYY.E2F4.GM12878", xanchor='right', showarrow = F)
+Test_plot<- Test_plot %>% add_annotations(x=3661, y=0.36406, xref= "x", yref= "y", text = "ENCSR000EVL.E2F4.HeLA-S3", xanchor='right', showarrow = F)
+Test_plot
 ```
-Visualize plot_RES
-```{r}
-plot_RES(GSEA_result = pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, TF = c("SMARCE1", "E2F4"), Accession = c("ENCSR968QDP.SMARCE1.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000EVL.E2F4.HeLa-S3"))
-```
-
-
-```{r}
-R.Version()
-```
-```{r}
-installed.packages()
-[names(sessionInfo()$otherPkgs), "Version"}]
-```
-
