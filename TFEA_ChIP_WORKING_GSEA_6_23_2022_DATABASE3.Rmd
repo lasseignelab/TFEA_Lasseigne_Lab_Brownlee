@@ -1,0 +1,56 @@
+---
+title: "TFEA_ChIP_WORKING_GSEA_6_23_2022_DATABASE3"
+author: "Ryan Brownlee"
+date: '2022-06-26'
+output: html_document
+---
+Library all packages needed
+```{r}
+library(TFEA.ChIP)
+library(dplyr)
+library(ggplot2)
+library(DESeq2)
+library(biomaRt)
+```
+
+```{r}
+alldegs3 <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/TFEA_Lasseigne_Lab_Brownlee/deseq2_fullres_56_Database3.csv")
+```
+Remove NAs from alldegs
+```{r}
+alldegs3 <- tidyr::drop_na(alldegs3, log2FoldChange)
+alldegs3<- alldegs3[-c(5,6,7)]
+View(alldegs3)
+```
+Establish Chip_index
+```{r}
+chip_index3 <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
+chip_index3 <- get_chip_index( encodeFilter = TRUE )
+```
+Run TF Ranking
+```{r}
+alldegs3_table <- preprocessInputData(alldegs3)
+Genes.Upreg3 <- Select_genes(alldegs3_table, min_LFC = 1)
+Genes.Control3 <- Select_genes(alldegs3_table, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+CM_list_UP3 <- contingency_matrix(Genes.Upreg3, Genes.Control3)
+pval_mat_up3<- getCMstats(CM_list_UP3)
+TF_ranking3 <- rankTFs(pval_mat_up3, rankMethod = "gsea", makePlot = TRUE)
+TF_ranking3[["TFranking_plot"]]
+```
+Create plot_CM graph
+```{r}
+plot_CM(pval_mat_up3)
+```
+GSEA Run Database 2
+```{r}
+pkd_tf_gsea_database3<- GSEA_run(alldegs3_table$Genes, alldegs3_table$log2FoldChange, chip_index3, get.RES = TRUE)
+TF.highlight2 <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4")
+names(TF.highlight2) <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4")
+col <- c("cadetblue1", "chocolate", "coral 1", "chartreuse", "burlywood", "azure1", "bisque", "blue", "aquamarine", "antiquewhite", "beige", "brown1", "black", "blueviolet") 
+database_3_plot <- plot_ES(pkd_tf_gsea_database3, LFC = alldegs3_table$log2FoldChange, specialTF = TF.highlight2, TF_colors = col)
+Database3_plot
+```
+plot RES fx
+```{r}
+plot_RES(GSEA_result = pkd_tf_gsea_database3, LFC= alldegs3_table$log2FoldChange, TF = c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4"), Accession = c("ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ATA.EZH2.endothelial_umbilical-vein", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR000BTB.FOXM1.SK-N-SH", "ENCSR476BQA.NONO.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000BRX.CEBPB.GM12878", "ENCSR000EYV.JUND.GM12878", "ENCSR784VUY.RNF2.WA01", "ENCSR000BRU.FOXM1.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000BUQ.TEAD4.SK-N-SH"))
+```
