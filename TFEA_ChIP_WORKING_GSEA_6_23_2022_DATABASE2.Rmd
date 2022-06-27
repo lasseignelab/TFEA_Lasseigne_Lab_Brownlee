@@ -1,0 +1,62 @@
+---
+title: "TFEA_ChIP_WORKING_GSEA_database2"
+author: "Ryan Brownlee"
+date: '2022-06-24'
+output: html_document
+---
+Library all packages needed
+```{r}
+library(TFEA.ChIP)
+library(dplyr)
+library(ggplot2)
+library(DESeq2)
+library(biomaRt)
+```
+
+Load in vignette data
+```{r}
+data( "hypoxia_DESeq", "hypoxia", package="TFEA.ChIP" ) # load example datasets
+hypoxia_table <- preprocessInputData( hypoxia_DESeq )
+head(hypoxia_table)
+```
+Load in our data
+```{r}
+alldegs2 <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/deseq2_fullres_19_database2.csv")
+```
+Remove NAs from alldegs
+```{r}
+alldegs2 <- tidyr::drop_na(alldegs2, log2FoldChange)
+alldegs2<- alldegs2[-c(5,6,7)]
+```
+
+```{r}
+chip_index2 <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
+chip_index2 <- get_chip_index( encodeFilter = TRUE )
+```
+Run TF Ranking
+```{r}
+alldegs2_table <- preprocessInputData(alldegs2)
+Genes.Upreg2 <- Select_genes(alldegs2_table, min_LFC = 1)
+Genes.Control2 <- Select_genes(alldegs2_table, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+CM_list_UP2 <- contingency_matrix(Genes.Upreg2, Genes.Control2)
+pval_mat_up2<- getCMstats(CM_list_UP2)
+TF_ranking2 <- rankTFs(pval_mat_up2, rankMethod = "gsea", makePlot = TRUE)
+TF_ranking2[["TFranking_plot"]]
+```
+Create plot_CM graph
+```{r}
+plot_CM(pval_mat_up2)
+```
+GSEA Run Database 2
+```{r}
+pkd_tf_gsea_database2<- GSEA_run(alldegs2_table$Genes, alldegs2_table$log2FoldChange, chip_index2, get.RES = TRUE)
+TF.highlight <- c("STAT5A", "ATF2", "JUND", "JUN", "TBLXR1", "TCF7", "STAT3", "SMC3", "TEAD4", "RAD21", "CTCF", "NFIC", "IKZF1", "EBF1", "FOSL2", "SMC3", "GATA2", "SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "NONO", "CEBPB", "EBF1", "MEF2A", "RNF2", "RXRA")
+Database2_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight, TF_colors = TRUE)
+Database2_plot<- Database2_plot %>% add_annotations(x=2765, y=0.46985, xref= "x", yref= "y", text = "ENCSR968QDP.SMARCE1.Hep-G2", xanchor='right', showarrow = F)
+Database2_plot
+```
+Visualize plot_RES
+```{r}
+plot_RES(GSEA_result = pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, TF = c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12","NONO", "CEBPB", "EBF1", "MEF2A", "RNF2", "RXRA", "JUND", "JUN", "TBLIXR1", "TCF7", "SMC3", "TEAD4", "RAD21", "CTCF", "NFIC", "FOSL2", "SMC3", "GATA2", "STAT5A", "JUND"), Accession = c("ENCSR543BVU.SOX6.Hep-G2", "ENCSR019KPC.PLRG1.Hep-G2", "ENCSR799GOY.YBX1.Hep-G2", "ENCSR205SKQ.YBX1.GM12878", "ENCSR000DYR.CUX1.GM12878", "ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ASY.EZH2.WA01", "ENCSR000DZG.EP300.GM12878", "ENCSR000DZD.EP300.GM12878", "ENCSR000ECV.EP300.HeLa-S3", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR476BQA.NONO.Hep-G2","ENCSR000BRX.CEBPB.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000BVC.MEF2A.SK-N-SH", "ENCSR784VUY.RNF2.WA01", "ENCSR000BVG.RXRA.SK-N-SH", "ENCSR000BSK.JUND.SK-N-SH", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000EFA.JUN.endothelial_umbilical-vein", "ENCSR501DKS.TCF7.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000BUQ.TEAD4.SK-N-SH", "ENCSR635OSG.RAD21.liver", "ENCSR000DLK.CTCF.WA01", "ENCSR000BNH.CTCF.WA01", "ENCSR000ALA.CTCF.endothelial_umbilical-vein", "ENCSR000BRN.NFIC.GM12878", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000DZP.SMC3.GM12878", "ENCSR000EVW.GATA2.endothelial_umbilical-vein", "ENCSR000BMY.RAD21.GM12878", "ENCSR000EAC.RAD21.GM12878", "ENCSR000BQZ.STAT5A.GM12878", "ENCSR000BSK.JUND.SK-N-SH"))
+```
+
