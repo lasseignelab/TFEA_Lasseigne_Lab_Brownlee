@@ -192,7 +192,12 @@ plotMA(resLFC_nf, ylim=c(-2,2))
 
 PCA
 ```{r}
-plotPCA(rld_nf, intgroup=c("Genotype")) + geom_label_repel(aes(label = rld_nf@colData@rownames), box.padding   = 0.15, label.padding = 0.15, point.padding = 0.3, segment.color = 'grey50') 
+#test w/ viridis
+df<- as.data.frame(rld_nf)
+plotPCA(rld_nf, intgroup=c("Genotype")) + geom_label_repel(aes(rld_nf@colData@rownames), box.padding   = 0.15, label.padding = 0.15, point.padding  = 0.3, segment.color = "grey50", gridlines.major = FALSE, gridlines.minor = FALSE)
+
+#original
+plotPCA(rld_nf, intgroup=c("Genotype")) + geom_label_repel(aes(label = rld_nf@colData@rownames), box.padding   = 0.15, label.padding = 0.15, point.padding = 0.3, segment.color = 'grey50', gridlines.major = FALSE, gridlines.minor = FALSE)
 ```
 
 Modify DESeq2::plotPCA
@@ -249,15 +254,25 @@ Heatmap plotting:
 #Top 20 LFC
 ```{r}
 library(pheatmap)
+rownames(cts_39) <- gsub("\\..*", "", rownames(cts_39))
+
 genestop20 <- order(resLFC_nf$log2FoldChange, decreasing = TRUE)[1:20]
 pheatmap(assay(cts_39)[genestop20, ], cluster_rows = TRUE, show_rownames = TRUE, cluster_cols = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Greatest LFC Genes", angle_col = 45)
 
 genesbottom20 <- order((resLFC_nf$log2FoldChange), decreasing = FALSE)[1:20]
 pheatmap(assay(cts_39)[genesbottom20, ], cluster_rows = TRUE, show_rownames = TRUE, cluster_cols = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "White", main = "20 Lowest LFC Genes", angle_col = 45)
 ```
+Plotting individual gene targets
 ```{r}
-rownames(resLFC_nf) <- ensembl = useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-getBM(attributes = 'hgnc_symbol', filters = 'ensembl_gene_id', values = ensemblIDS, mart = ensembl)
+gene_targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\gene_drug_targets_39.csv")
+gene_targets <- unique(gene_targets$Target)
+plotCounts(dds_39, gene = gene_targets, intgroup = "Genotype")
+```
+
+```{r}
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+tester <- rownames(resLFC_nf)
+G_list <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id", "hgnc_symbol"), values=tester, mart = mart)
 ```
 
 
