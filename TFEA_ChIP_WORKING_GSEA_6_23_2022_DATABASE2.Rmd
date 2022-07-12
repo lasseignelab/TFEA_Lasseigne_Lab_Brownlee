@@ -50,13 +50,24 @@ plot_CM(pval_mat_up2)
 GSEA Run Database 2
 ```{r}
 pkd_tf_gsea_database2<- GSEA_run(alldegs2_table$Genes, alldegs2_table$log2FoldChange, chip_index2, get.RES = TRUE)
-TF.highlight <- c("STAT5A", "ATF2", "JUND", "JUN", "TBLXR1", "TCF7", "STAT3", "SMC3", "TEAD4", "RAD21", "CTCF", "NFIC", "IKZF1", "EBF1", "FOSL2", "SMC3", "GATA2", "SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "NONO", "CEBPB", "EBF1", "MEF2A", "RNF2", "RXRA")
-Database2_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight, TF_colors = TRUE)
-Database2_plot<- Database2_plot %>% add_annotations(x=2765, y=0.46985, xref= "x", yref= "y", text = "ENCSR968QDP.SMARCE1.Hep-G2", xanchor='right', showarrow = F)
+TF.highlight <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "IKZF1", "NONO", "NBN")
+names(TF.highlight) <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "NONO", "IKZF1", "NBN")
+col <- c("#fde725", "#b5de2b","#6ece58", "#35b779", "#1f9e89", "#26828e", "#31688e", "#3e4989", "#482878", "#440154")
+Database2_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
+Database2_plot<- Database2_plot %>% add_annotations(x=3465, y=0.46402, xref= "x", yref= "y", text = "SOX6", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=2880, y=0.43431, xref= "x", yref= "y", text = "PLRG1", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=3440, y=0.43500, xref= "x", yref= "y", text = "YBX1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=4040, y=0.41200, xref= "x", yref= "y", text = "CUX1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=3425, y=0.41300, xref= "x", yref= "y", text = "EZH2", xanchor='bottom', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=3230, y=0.40000, xref= "x", yref= "y", text = "EP300", xanchor='bottom', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=3470, y=0.381, xref= "x", yref= "y", text = "SUZ12", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 5))
+Database2_plot<- Database2_plot %>% add_annotations(x=4350, y=0.40700, xref= "x", yref= "y", text = "NONO", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=4450, y=0.39222, xref= "x", yref= "y", text = "IKZF1", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
+Database2_plot<- Database2_plot %>% add_annotations(x=4260, y=0.38709, xref= "x", yref= "y", text = "NBN", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
+
 Database2_plot
 ```
 Visualize plot_RES
 ```{r}
 plot_RES(GSEA_result = pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, TF = c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12","NONO", "CEBPB", "EBF1", "MEF2A", "RNF2", "RXRA", "JUND", "JUN", "TBLIXR1", "TCF7", "SMC3", "TEAD4", "RAD21", "CTCF", "NFIC", "FOSL2", "SMC3", "GATA2", "STAT5A", "JUND"), Accession = c("ENCSR543BVU.SOX6.Hep-G2", "ENCSR019KPC.PLRG1.Hep-G2", "ENCSR799GOY.YBX1.Hep-G2", "ENCSR205SKQ.YBX1.GM12878", "ENCSR000DYR.CUX1.GM12878", "ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ASY.EZH2.WA01", "ENCSR000DZG.EP300.GM12878", "ENCSR000DZD.EP300.GM12878", "ENCSR000ECV.EP300.HeLa-S3", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR476BQA.NONO.Hep-G2","ENCSR000BRX.CEBPB.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000BVC.MEF2A.SK-N-SH", "ENCSR784VUY.RNF2.WA01", "ENCSR000BVG.RXRA.SK-N-SH", "ENCSR000BSK.JUND.SK-N-SH", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000EFA.JUN.endothelial_umbilical-vein", "ENCSR501DKS.TCF7.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000BUQ.TEAD4.SK-N-SH", "ENCSR635OSG.RAD21.liver", "ENCSR000DLK.CTCF.WA01", "ENCSR000BNH.CTCF.WA01", "ENCSR000ALA.CTCF.endothelial_umbilical-vein", "ENCSR000BRN.NFIC.GM12878", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000DZP.SMC3.GM12878", "ENCSR000EVW.GATA2.endothelial_umbilical-vein", "ENCSR000BMY.RAD21.GM12878", "ENCSR000EAC.RAD21.GM12878", "ENCSR000BQZ.STAT5A.GM12878", "ENCSR000BSK.JUND.SK-N-SH"))
 ```
-
