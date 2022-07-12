@@ -44,13 +44,24 @@ plot_CM(pval_mat_up3)
 GSEA Run Database 2
 ```{r}
 pkd_tf_gsea_database3<- GSEA_run(alldegs3_table$Genes, alldegs3_table$log2FoldChange, chip_index3, get.RES = TRUE)
-TF.highlight2 <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4")
-names(TF.highlight2) <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4")
-col <- c("cadetblue1", "chocolate", "coral 1", "chartreuse", "burlywood", "azure1", "bisque", "blue", "aquamarine", "antiquewhite", "beige", "brown1", "black", "blueviolet") 
-database_3_plot <- plot_ES(pkd_tf_gsea_database3, LFC = alldegs3_table$log2FoldChange, specialTF = TF.highlight2, TF_colors = col)
+TF.highlight3 <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3")
+names(TF.highlight3) <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3")
+col <- c("#fde725", "#b5de2b","#6ece58", "#35b779", "#1f9e89", "#26828e", "#31688e", "#3e4989", "#482878", "#440154")
+Database3_plot <- plot_ES(pkd_tf_gsea_database3, LFC = alldegs3_table$log2FoldChange, specialTF = TF.highlight3, TF_colors = col)
+Database3_plot<- Database3_plot %>% add_annotations(x=3136, y=0.38300, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=3380, y=0.39488, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=3143, y=0.36200, xref= "x", yref= "y", text = "SUZ12", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=4314, y=0.36919, xref= "x", yref= "y", text = "FOXM1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=3410, y=0.35201, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 4))
+Database3_plot<- Database3_plot %>% add_annotations(x=4055, y=0.34615, xref= "x", yref= "y", text = "E2F4", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=3300, y=0.3250, xref= "x", yref= "y", text = "RNF2", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
+Database3_plot<- Database3_plot %>% add_annotations(x=4112, y=0.31919, xref= "x", yref= "y", text = "JUND", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=4600, y=0.32818, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database3_plot<- Database3_plot %>% add_annotations(x=4004, y=0.30632, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
+Database3_plot<- Database3_plot %>% add_annotations(x=3700, y=0.29722, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
+
 Database3_plot
 ```
 plot RES fx
 ```{r}
 plot_RES(GSEA_result = pkd_tf_gsea_database3, LFC= alldegs3_table$log2FoldChange, TF = c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4"), Accession = c("ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ATA.EZH2.endothelial_umbilical-vein", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR000BTB.FOXM1.SK-N-SH", "ENCSR476BQA.NONO.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000BRX.CEBPB.GM12878", "ENCSR000EYV.JUND.GM12878", "ENCSR784VUY.RNF2.WA01", "ENCSR000BRU.FOXM1.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000BUQ.TEAD4.SK-N-SH"))
-```
