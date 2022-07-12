@@ -5,9 +5,12 @@ date: '2022-06-23'
 output: html_document
 ---
 Libraries
-```library(TFEA.ChIP)
+```{r}
+library(TFEA.ChIP)
 library(DESeq2)
 library(biomaRt)
+library(dplyr)
+library(plotly)
 ```
 Load in vignette data
 ```{r}
@@ -25,7 +28,7 @@ alldegs <- tidyr::drop_na(alldegs, log2FoldChange)
 ```
 ```{r}
 chip_index <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
-chip_index2 <- get_chip_index( encodeFilter = TRUE )
+chip_index <- get_chip_index( encodeFilter = TRUE )
 ```
 Mouse to human (ensembl)
 ```{r}
@@ -47,16 +50,29 @@ GSEA_run with pkd data
 ```{r}
 #sort by log fold change for gsea
 entrezdegs <- dplyr::arrange(entrezdegs, desc(log2FoldChange))
-pkd_tf_gsea <- GSEA_run(as.character(entrezdegs$entrezgene_id), entrezdegs$log2FoldChange, chip_index2, get.RES = TRUE)
+pkd_tf_gsea <- GSEA_run(as.character(entrezdegs$entrezgene_id), entrezdegs$log2FoldChange, chip_index, get.RES = TRUE)
 ```
 Visualization-pkd data
 ```{r}
 TF.highlight <- c("SMARCE1", "E2F4")
 names(TF.highlight) <- c("SMARCE1", "E2F4")
-col <- c("red", "blue", "green")
+col <- c("#5ec962", "#440154")
 Test_plot<- plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
-Test_plot<- Test_plot %>% add_annotations(x=2765, y=0.46985, xref= "x", yref= "y", text = "ENCSR968QDP.SMARCE1.Hep-G2", xanchor='right', showarrow = F)
-Test_plot<- Test_plot %>% add_annotations(x=3661, y=0.42085, xref= "x", yref= "y", text = "ENCSR000DYY.E2F4.GM12878", xanchor='right', showarrow = F)
-Test_plot<- Test_plot %>% add_annotations(x=3661, y=0.36406, xref= "x", yref= "y", text = "ENCSR000EVL.E2F4.HeLA-S3", xanchor='right', showarrow = F)
+Test_plot<- Test_plot %>% add_annotations(x=2800, y=0.46985, xref= "x", yref= "y", xanchor='right', text = "SMARCE1", showarrow = T, arrowhead = 3, arrowsize = .5)
+Test_plot<- Test_plot %>% add_annotations(x=3650, y=0.42085, xref= "x", yref= "y", xanchor='left', text = "E2F4", showarrow = T, arrowhead = 3, arrowsize = .5)
+Test_plot<- Test_plot %>% add_annotations(x=3620, y=0.36106, xref= "x", yref= "y", text = "E2F4", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .5)
 Test_plot
+```
+Visualize plot_RES
+```{r}
+plot_RES(GSEA_result = pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, TF = c("SMARCE1", "E2F4"), Accession = c("ENCSR968QDP.SMARCE1.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000EVL.E2F4.HeLa-S3"))
+```
+
+
+```{r}
+R.Version()
+```
+```{r}
+installed.packages()
+[names(sessionInfo()$otherPkgs), "Version"}]
 ```
