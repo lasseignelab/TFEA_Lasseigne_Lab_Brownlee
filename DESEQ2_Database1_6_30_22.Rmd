@@ -291,8 +291,14 @@ Plotting individual gene targets
 ```{r}
 gene_targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\gene_drug_targets_39.csv")
 gene_targets_unique <- unique(gene_targets$Target)
-plotCounts(dds_39, "GGCX", intgroup = "Genotype")
+count_test <- plotCounts(dds_39, gene = which.min(res_nf$padj), intgroup = "Genotype", returnData = TRUE)
+ggplot(count_test, aes(x = Genotype, y = count)) + geom_point(position = position_jitter(w=0.1,h=0)) + scale_y_log10(breaks = c(25,100,400))
 ```
+#Individual Gene Targets
+```{r}
+individual_test <- plotCounts(dds_39, gene = "Ckb", intgroup = "Genotype", returnData = TRUE) 
+```
+
 ```{r}
 #volcano plotting
  if (!requireNamespace('BiocManager', quietly = TRUE))
