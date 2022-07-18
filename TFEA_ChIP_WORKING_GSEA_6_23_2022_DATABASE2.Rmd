@@ -71,3 +71,12 @@ Visualize plot_RES
 ```{r}
 plot_RES(GSEA_result = pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, TF = c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12","NONO", "CEBPB", "EBF1", "MEF2A", "RNF2", "RXRA", "JUND", "JUN", "TBLIXR1", "TCF7", "SMC3", "TEAD4", "RAD21", "CTCF", "NFIC", "FOSL2", "SMC3", "GATA2", "STAT5A", "JUND"), Accession = c("ENCSR543BVU.SOX6.Hep-G2", "ENCSR019KPC.PLRG1.Hep-G2", "ENCSR799GOY.YBX1.Hep-G2", "ENCSR205SKQ.YBX1.GM12878", "ENCSR000DYR.CUX1.GM12878", "ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ASY.EZH2.WA01", "ENCSR000DZG.EP300.GM12878", "ENCSR000DZD.EP300.GM12878", "ENCSR000ECV.EP300.HeLa-S3", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR476BQA.NONO.Hep-G2","ENCSR000BRX.CEBPB.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000BVC.MEF2A.SK-N-SH", "ENCSR784VUY.RNF2.WA01", "ENCSR000BVG.RXRA.SK-N-SH", "ENCSR000BSK.JUND.SK-N-SH", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000EFA.JUN.endothelial_umbilical-vein", "ENCSR501DKS.TCF7.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000BUQ.TEAD4.SK-N-SH", "ENCSR635OSG.RAD21.liver", "ENCSR000DLK.CTCF.WA01", "ENCSR000BNH.CTCF.WA01", "ENCSR000ALA.CTCF.endothelial_umbilical-vein", "ENCSR000BRN.NFIC.GM12878", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000DZP.SMC3.GM12878", "ENCSR000EVW.GATA2.endothelial_umbilical-vein", "ENCSR000BMY.RAD21.GM12878", "ENCSR000EAC.RAD21.GM12878", "ENCSR000BQZ.STAT5A.GM12878", "ENCSR000BSK.JUND.SK-N-SH"))
 ```
+```{r}
+pkd_tf_gsea_database2_pvalues <- dplyr::filter(pkd_tf_gsea_database2$Enrichment.table, pval.adj < 0.05)
+pkd_tf_gsea_database2_pvalues <- pkd_tf_gsea_database2_pvalues[,!(colnames(pkd_tf_gsea_database2_pvalues) %in% c("Accession", "Cell", "Treatment", "Arg.ES", "p.val"))]
+pkd_tf_gsea_database2_pvalues <- dplyr::distinct(pkd_tf_gsea_database2_pvalues, TF, .keep_all = TRUE)
+gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
+gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
+target_gene_overlap_TFEA_19 <- merge(pkd_tf_gsea_database2_pvalues, gene_targets_unique_df_TFEA, by = "TF")
+View(target_gene_overlap_TFEA_19)
+```
