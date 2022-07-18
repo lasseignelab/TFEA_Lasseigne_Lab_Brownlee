@@ -4,7 +4,7 @@ author: "Ryan Brownlee"
 date: '2022-06-23'
 output: html_document
 ---
-Libraries
+Libraries 
 ```{r}
 library(TFEA.ChIP)
 library(DESeq2)
@@ -68,11 +68,12 @@ Visualize plot_RES
 plot_RES(GSEA_result = pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, TF = c("SMARCE1", "E2F4"), Accession = c("ENCSR968QDP.SMARCE1.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000EVL.E2F4.HeLa-S3"))
 ```
 
-
 ```{r}
-R.Version()
-```
-```{r}
-installed.packages()
-[names(sessionInfo()$otherPkgs), "Version"}]
+pkd_tf_gsea_database1_pvalues <- dplyr::filter(pkd_tf_gsea$Enrichment.table, pval.adj < 0.05)
+pkd_tf_gsea_database1_pvalues <- pkd_tf_gsea_database1_pvalues[,!(colnames(pkd_tf_gsea_database1_pvalues) %in% c("Accession", "Cell", "Treatment", "Arg.ES", "p.val"))]
+pkd_tf_gsea_database1_pvalues <- dplyr::distinct(pkd_tf_gsea_database1_pvalues, TF, .keep_all = TRUE)
+gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
+gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
+target_gene_overlap_TFEA_39 <- merge(pkd_tf_gsea_database1_pvalues, gene_targets_unique_df_TFEA, by = "TF")
+View(target_gene_overlap_TFEA_39)
 ```
