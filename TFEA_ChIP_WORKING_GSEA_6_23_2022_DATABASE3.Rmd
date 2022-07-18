@@ -65,3 +65,13 @@ Database3_plot
 plot RES fx
 ```{r}
 plot_RES(GSEA_result = pkd_tf_gsea_database3, LFC= alldegs3_table$log2FoldChange, TF = c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4"), Accession = c("ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ATA.EZH2.endothelial_umbilical-vein", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR000BTB.FOXM1.SK-N-SH", "ENCSR476BQA.NONO.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000BRX.CEBPB.GM12878", "ENCSR000EYV.JUND.GM12878", "ENCSR784VUY.RNF2.WA01", "ENCSR000BRU.FOXM1.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000BUQ.TEAD4.SK-N-SH"))
+```
+```{r}
+pkd_tf_gsea_database3_pvalues <- dplyr::filter(pkd_tf_gsea_database3$Enrichment.table, pval.adj < 0.05)
+pkd_tf_gsea_database3_pvalues <- pkd_tf_gsea_database3_pvalues[,!(colnames(pkd_tf_gsea_database3_pvalues) %in% c("Accession", "Cell", "Treatment", "Arg.ES", "p.val"))]
+pkd_tf_gsea_database3_pvalues <- dplyr::distinct(pkd_tf_gsea_database3_pvalues, TF, .keep_all = TRUE)
+gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
+gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
+target_gene_overlap_TFEA_56 <- merge(pkd_tf_gsea_database3_pvalues, gene_targets_unique_df_TFEA, by = "TF")
+View(target_gene_overlap_TFEA_56)
+```
