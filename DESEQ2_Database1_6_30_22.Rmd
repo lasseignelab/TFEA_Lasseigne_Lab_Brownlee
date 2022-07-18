@@ -255,29 +255,29 @@ conv_cts <- merge(cts_df, conversion, by = "gene_id")
 conv_cts <- conv_cts[,!(colnames(conv_cts) %in% c("gene_id", "group", "group_name"))]
 conv_cts <- dplyr::distinct(conv_cts, gene_name, .keep_all = TRUE)
 conv_cts <- tibble:::column_to_rownames(conv_cts, "gene_name")
+colnames(conv_cts) <- c("WT", "WT", "WT", "PKD2", "PKD2", "PKD2", "Ift88", "Ift88", "Ift88")
+conv_cts[conv_cts==0] <- NA
+conv_cts_fixed <- conv_cts[complete.cases(conv_cts),]
 #conv_cts <- round(conv_cts)
-
-#sort by variance
-test <- apply(conv_cts, 1, var)
-#top 20 most variable genes
-top <- names(sort(test, decreasing = TRUE))[1:20]
 
 #need to convert the gene IDs here also
 #genes <- order(resLFC_nf$log2FoldChange, decreasing=TRUE)[1:20]
 
 #top20 genes w/ conv_cts
 fixedtop20 <- order(conv_cts_fixed$PKD2, decreasing = TRUE)[1:20]
-fixedtop20test <- order(conv_cts_fixed, decreasing= TRUE)[1:20]
+#fixedtop20test <- order(conv_cts_fixed, decreasing= TRUE)[1:20]
 pheatmap(conv_cts_fixed[fixedtop20, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive LFC", angle_col = 45)
 
 #bottom 20 genes w/ conv_cts
 fixedbottom20 <- order(conv_cts_fixed$PKD2, decreasing = FALSE)[1:20]
 pheatmap(conv_cts_fixed[fixedbottom20, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Bottom 20 Positive LFC", angle_col = 45)
 
- #20 most varied genes
-#estimate variance for each row 
-pheatmap(conv_cts[top,], cluster_rows=TRUE, show_rownames=TRUE,
-         cluster_cols=FALSE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied LFC Genes", angle_col = 45) #, annotation_col=meta_39$Genotype)
+#sort by variance
+test <- apply(conv_cts, 1, var)
+#top 20 most variable genes
+top <- names(sort(test, decreasing = TRUE))[1:20]
+#create heatmap
+pheatmap(conv_cts[top,], cluster_rows=TRUE, cluster_cols=TRUE, show_rownames=TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied LFC Genes", angle_col = 45) #, annotation_col=meta_39$Genotype)
            
    #heatmap w/o gene symbols 20 greatest genes
 genestop20 <- order(resLFC_nf$log2FoldChange, decreasing = TRUE)[1:20]
@@ -319,8 +319,31 @@ TopT_finish <- tibble:::column_to_rownames(TopT_finish, "gene_name")
 topt_finish_wack <- dplyr::distinct(TopT_finish, gene_name, .keep_all = TRUE)
 
 View(TopT_finish)
+#volcano plot w/ strict pvalue cutoff
 EnhancedVolcano(TopT_finish, lab = rownames(TopT_finish), x = 'log2FoldChange', y = 'pvalue', pCutoff = 10e-32, FCcutoff = 0.5, pointSize = 3.0, labSize = 6.0, col = c("#440154", "#21918c", "#5ec962", "#fde725"))
+#basic volcano plot
+EnhancedVolcano(TopT_finish, lab = rownames(TopT_finish), x = 'log2FoldChange', y = 'pvalue', pointSize = 3.0, labSize = 4.0, col = c("#440154", "#21918c", "#5ec962", "#fde725"))
 ```
+
+```{r}
+#Check for DEG drug targets
+deg_39_up <- dsq2_39_up
+deg_39_up <- tibble:::rownames_to_column(deg_39_up)
+names(deg_39_up)[1] <- "gene_id"
+deg_39_up <- left_join(deg_39_up, conversion, by = "gene_id")
+deg_39_up <- deg_39_up[,!(colnames(deg_39_up) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
+deg_39_up <- dplyr::distinct(deg_39_up, gene_name, .keep_all = TRUE)
+#deg_39_up <- tibble:::column_to_rownames(deg_39_up, "gene_name")
+gene_targets_unique_df <- as.data.frame(gene_targets_unique)
+gene_targets_unique_df <- setNames(gene_targets_unique_df, c("gene_name"))
+# deg_39_up is in lowercase and gene_targets_unique_df is uppercase. must fix!
+deg_39_up$gene_name <- toupper(deg_39_up$gene_name)
+#now fixed, merge for similarities in targets
+target_gene_overlap_DESEQ2_39 <- merge(deg_39_up, gene_targets_unique_df, by = "gene_name")
+View(target_gene_overlap_DESEQ2_39)
+```
+
+
 
 
 ```{r}
