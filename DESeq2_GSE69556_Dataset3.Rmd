@@ -224,7 +224,7 @@ conversion3$gene_id <- gsub("\\..*", "", conversion3$gene_id)
 cts56_df <- as.data.frame(assays((rld_56)))
 cts56_df <- tibble:::rownames_to_column(cts56_df, var = "gene_id")
 
-conv_cts56 <- merge(cts56_df, conversion, by = "gene_id")
+conv_cts56 <- merge(cts56_df, conversion3, by = "gene_id")
 conv_cts56 <- conv_cts56[,!(colnames(conv_cts56) %in% c("gene_id", "group", "group_name"))]
 conv_cts56 <- dplyr::distinct(conv_cts56, gene_name, .keep_all = TRUE)
 conv_cts56 <- tibble:::column_to_rownames(conv_cts56, "gene_name")
@@ -243,7 +243,7 @@ conv_cts_fixed56 <- conv_cts56[complete.cases(conv_cts56),]
 #top20 genes w/ conv_cts
 fixedtop20_56 <- order(conv_cts_fixed56$PKD2, decreasing = TRUE)[1:20]
 #fixedtop20test <- order(conv_cts_fixed, decreasing= TRUE)[1:20]
-pheatmap(conv_cts_fixed56[fixedtop20_56, ], cluster_rows = TRUE, cluster_cols = FALSE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive Genes '56", angle_col = 45)
+pheatmap(conv_cts_fixed56[fixedtop20_56, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive Genes '56", angle_col = 45)
 
 #bottom 20 genes w/ conv_cts
 fixedbottom20_56 <- order(conv_cts_fixed56$PKD2, decreasing = FALSE)[1:20]
@@ -256,8 +256,7 @@ top56 <- names(sort(test56, decreasing = TRUE))[1:20]
 
  #20 most varied genes
 #estimate variance for each row 
-pheatmap(conv_cts56[top56,], cluster_rows=TRUE, show_rownames=TRUE,
-         cluster_cols=FALSE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied Genes '56", angle_col = 45) #, annotation_col=meta_39$Genotype)
+pheatmap(conv_cts56[top56,], cluster_rows=TRUE, show_rownames=TRUE, cluster_cols=FALSE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied Genes Cystic P21", angle_col = 45) #, annotation_col=meta_39$Genotype)
 ```
 #volcano plots
 ```{r}
