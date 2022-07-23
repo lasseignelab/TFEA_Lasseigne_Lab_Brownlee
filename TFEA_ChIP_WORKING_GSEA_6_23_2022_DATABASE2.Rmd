@@ -53,8 +53,8 @@ pkd_tf_gsea_database2<- GSEA_run(alldegs2_table$Genes, alldegs2_table$log2FoldCh
 TF.highlight <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "IKZF1", "NONO", "NBN")
 names(TF.highlight) <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "NONO", "IKZF1", "NBN")
 col <- c("#fde725", "#b5de2b","#6ece58", "#35b779", "#1f9e89", "#26828e", "#31688e", "#3e4989", "#482878", "#440154")
-Database2_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
-Database2_plot<- Database2_plot %>% add_annotations(x=3465, y=0.46402, xref= "x", yref= "y", text = "SOX6", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
+Database2_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight, TF_colors = col, plot_title = "Transcription Factor Enrichment: Cystic P21")
+Database2_plot<- Database2_plot %>% add_annotations(x=3450, y=0.46402, xref= "x", yref= "y", text = "SOX6", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
 Database2_plot<- Database2_plot %>% add_annotations(x=2880, y=0.43431, xref= "x", yref= "y", text = "PLRG1", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
 Database2_plot<- Database2_plot %>% add_annotations(x=3440, y=0.43500, xref= "x", yref= "y", text = "YBX1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
 Database2_plot<- Database2_plot %>% add_annotations(x=4040, y=0.41200, xref= "x", yref= "y", text = "CUX1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 6))
@@ -80,4 +80,3 @@ gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
 target_gene_overlap_TFEA_19 <- merge(pkd_tf_gsea_database2_pvalues, gene_targets_unique_df_TFEA, by = "TF")
 View(target_gene_overlap_TFEA_19)
 ```
-
