@@ -57,10 +57,10 @@ Visualization-pkd data
 TF.highlight <- c("SMARCE1", "E2F4")
 names(TF.highlight) <- c("SMARCE1", "E2F4")
 col <- c("#5ec962", "#440154")
-Test_plot<- plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col)
+Test_plot<- plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col, plot_title = "Transcription Factor Enrichment: Pre-Cystic")
 Test_plot<- Test_plot %>% add_annotations(x=2800, y=0.46985, xref= "x", yref= "y", xanchor='right', text = "SMARCE1", showarrow = T, arrowhead = 3, arrowsize = .5)
-Test_plot<- Test_plot %>% add_annotations(x=3650, y=0.42085, xref= "x", yref= "y", xanchor='left', text = "E2F4", showarrow = T, arrowhead = 3, arrowsize = .5)
-Test_plot<- Test_plot %>% add_annotations(x=3620, y=0.36106, xref= "x", yref= "y", text = "E2F4", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .5)
+Test_plot<- Test_plot %>% add_annotations(x=3943, y=0.42385, xref= "x", yref= "y", xanchor='left', text = "E2F4", showarrow = T, arrowhead = 3, arrowsize = .5)
+Test_plot<- Test_plot %>% add_annotations(x=4361, y=0.35806, xref= "x", yref= "y", text = "E2F4", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .5)
 Test_plot
 ```
 Visualize plot_RES
@@ -76,4 +76,13 @@ gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
 gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
 target_gene_overlap_TFEA_39 <- merge(pkd_tf_gsea_database1_pvalues, gene_targets_unique_df_TFEA, by = "TF")
 View(target_gene_overlap_TFEA_39)
+```
+
+
+```{r}
+R.Version()
+```
+```{r}
+installed.packages()
+[names(sessionInfo()$otherPkgs), "Version"}]
 ```
