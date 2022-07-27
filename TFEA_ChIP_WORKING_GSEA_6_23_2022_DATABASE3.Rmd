@@ -1,5 +1,5 @@
 ---
-title: "TFEA_ChIP_WORKING_GSEA_6_23_2022_DATABASE3"
+title: "TFEA_ChIP_WORKING_GSEA_6_23_2022_POST_CYST_P21"
 author: "Ryan Brownlee"
 date: '2022-06-26'
 output: html_document
@@ -12,28 +12,33 @@ library(ggplot2)
 library(DESeq2)
 library(biomaRt)
 ```
-
+Load in our Post-Cystic P21 Data
 ```{r}
 alldegs3 <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/TFEA_Lasseigne_Lab_Brownlee/deseq2_fullres_56_Database3.csv")
 ```
 Remove NAs from alldegs
 ```{r}
 alldegs3 <- tidyr::drop_na(alldegs3, log2FoldChange)
+#Drop unneeded columns of data
 alldegs3<- alldegs3[-c(5,6,7)]
 View(alldegs3)
 ```
 Establish Chip_index
 ```{r}
-chip_index3 <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
 chip_index3 <- get_chip_index( encodeFilter = TRUE )
 ```
 Run TF Ranking
 ```{r}
+#Sorts by decreasing log2FoldChange
 alldegs3_table <- preprocessInputData(alldegs3)
+#Selects for genes w/ >1 LFC
 Genes.Upreg3 <- Select_genes(alldegs3_table, min_LFC = 1)
+#Selects for gene control group
 Genes.Control3 <- Select_genes(alldegs3_table, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+#Creates contingency tables
 CM_list_UP3 <- contingency_matrix(Genes.Upreg3, Genes.Control3)
 pval_mat_up3<- getCMstats(CM_list_UP3)
+#Ranks the TFs and creates a plot of ES and rank
 TF_ranking3 <- rankTFs(pval_mat_up3, rankMethod = "gsea", makePlot = TRUE)
 TF_ranking3[["TFranking_plot"]]
 ```
@@ -42,36 +47,49 @@ Create plot_CM graph
 plot_CM(pval_mat_up3)
 ```
 GSEA Run Database 3
+#Data is ready for GSEA_RUN. Must include entrezID, log2FoldChange, and the chip index set earlier.
 ```{r}
 pkd_tf_gsea_database3<- GSEA_run(alldegs3_table$Genes, alldegs3_table$log2FoldChange, chip_index3, get.RES = TRUE)
+#Highlight significant TFs for color plotting and to put in figure legend
 TF.highlight3 <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3")
 names(TF.highlight3) <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3")
+#Choose viridis colors; one color code per highlighted TF.
 col <- c("#fde725", "#b5de2b","#6ece58", "#35b779", "#1f9e89", "#26828e", "#31688e", "#3e4989", "#482878", "#440154")
-Database3_plot <- plot_ES(pkd_tf_gsea_database3, LFC = alldegs3_table$log2FoldChange, specialTF = TF.highlight3, TF_colors = col, plot_title = "Transcription Factor Enrichment: Cystic P28")
-Database3_plot<- Database3_plot %>% add_annotations(x=3136, y=0.38300, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=20, ay= -25)
-Database3_plot<- Database3_plot %>% add_annotations(x=3380, y=0.39488, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=35, ay= -5)
-Database3_plot<- Database3_plot %>% add_annotations(x=3143, y=0.36200, xref= "x", yref= "y", text = "SUZ12", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=26, ay= 15)
-Database3_plot<- Database3_plot %>% add_annotations(x=4314, y=0.36919, xref= "x", yref= "y", text = "FOXM1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=37, ay= 4)
-Database3_plot<- Database3_plot %>% add_annotations(x=3430, y=0.35201, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=20, ay= -10)
-Database3_plot<- Database3_plot %>% add_annotations(x=4055, y=0.34615, xref= "x", yref= "y", text = "E2F4", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=25, ay= -17)
-Database3_plot<- Database3_plot %>% add_annotations(x=3398, y=0.31706, xref= "x", yref= "y", text = "RNF2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=16, ay= 30)
-Database3_plot<- Database3_plot %>% add_annotations(x=4112, y=0.31960, xref= "x", yref= "y", text = "JUND", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=35, ay= 9)
-Database3_plot<- Database3_plot %>% add_annotations(x=4600, y=0.32818, xref= "x", yref= "y", text = "EP300", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=10, ay= 3)
-Database3_plot<- Database3_plot %>% add_annotations(x=4004, y=0.30632, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=25, ay= 11)
-Database3_plot<- Database3_plot %>% add_annotations(x=3720, y=0.29722, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=48, ay= 21)
+#Scatterplot of the GSEA_RUN results.
+Post_Cyst_P21_plot <- plot_ES(pkd_tf_gsea_database3, LFC = alldegs3_table$log2FoldChange, specialTF = TF.highlight3, TF_colors = col, plot_title = "Transcription Factor Enrichment: Cystic P21")
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=3136, y=0.38300, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=20, ay= -25)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=3380, y=0.39488, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=35, ay= -5)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=3143, y=0.36200, xref= "x", yref= "y", text = "SUZ12", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=26, ay= 15)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=4314, y=0.36919, xref= "x", yref= "y", text = "FOXM1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=37, ay= 4)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=3430, y=0.35201, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=20, ay= -10)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=4055, y=0.34615, xref= "x", yref= "y", text = "E2F4", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=25, ay= -17)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=3398, y=0.31706, xref= "x", yref= "y", text = "RNF2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=16, ay= 30)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=4112, y=0.31960, xref= "x", yref= "y", text = "JUND", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=35, ay= 9)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=4600, y=0.32818, xref= "x", yref= "y", text = "EP300", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=10, ay= 3)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=4004, y=0.30632, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=25, ay= 11)
+Post_Cyst_P21_plot<- Post_Cyst_P21_plot %>% add_annotations(x=3720, y=0.29722, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=48, ay= 21)
 
-Database3_plot
+Post_Cyst_P21_plot
 ```
-plot RES fx
+#Visualize Plot_RES
+#Another way to view the results. Function plots a line plot of ES and log2FoldChange
+#I chose to plot only the significant TFs. Must include the accession label which can be taken from the scatterplot.
 ```{r}
 plot_RES(GSEA_result = pkd_tf_gsea_database3, LFC= alldegs3_table$log2FoldChange, TF = c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3", "EBF1", "JUN", "FOSL2", "TEAD4"), Accession = c("ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ATA.EZH2.endothelial_umbilical-vein", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR000BTB.FOXM1.SK-N-SH", "ENCSR476BQA.NONO.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000BRX.CEBPB.GM12878", "ENCSR000EYV.JUND.GM12878", "ENCSR784VUY.RNF2.WA01", "ENCSR000BRU.FOXM1.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000BUQ.TEAD4.SK-N-SH"))
 ```
+#Check for drug target matches
 ```{r}
+#Filter for significant enrichment scores
 pkd_tf_gsea_database3_pvalues <- dplyr::filter(pkd_tf_gsea_database3$Enrichment.table, pval.adj < 0.05)
+#Remove unneeded columns of data
 pkd_tf_gsea_database3_pvalues <- pkd_tf_gsea_database3_pvalues[,!(colnames(pkd_tf_gsea_database3_pvalues) %in% c("Accession", "Cell", "Treatment", "Arg.ES", "p.val"))]
+#remove any redundant TFs
 pkd_tf_gsea_database3_pvalues <- dplyr::distinct(pkd_tf_gsea_database3_pvalues, TF, .keep_all = TRUE)
+#Save new object and create as dataframe
 gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
+#Set col names to match the GSEA results
 gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
+#Merge results to check for targets
 target_gene_overlap_TFEA_56 <- merge(pkd_tf_gsea_database3_pvalues, gene_targets_unique_df_TFEA, by = "TF")
 View(target_gene_overlap_TFEA_56)
 ```
