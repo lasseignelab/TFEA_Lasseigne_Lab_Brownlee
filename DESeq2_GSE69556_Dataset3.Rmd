@@ -284,15 +284,72 @@ deg_56_up <- left_join(deg_56_up, conversion, by = "gene_id")
 deg_56_up <- deg_56_up[,!(colnames(deg_56_up) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
 deg_56_up <- dplyr::distinct(deg_56_up, gene_name, .keep_all = TRUE)
 #deg_56_up <- tibble:::column_to_rownames(deg_56_up, "gene_name")
-gene_targets_unique_df_56<- as.data.frame(gene_targets_unique)
-gene_targets_unique_df_56 <- setNames(gene_targets_unique_df_56, c("gene_name"))
+# Read in Drug Targets
+gene_targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\gene_drug_targets_39.csv")
+gene_targets_unique <- data.frame(gene_targets$pert, gene_targets$Target)
+gene_targets_unique <- setNames(gene_targets_unique, c("Drug", "gene_name"))
 # deg_39_up is in lowercase and gene_targets_unique_df is uppercase. must fix!
 deg_56_up$gene_name <- toupper(deg_56_up$gene_name)
 #now fixed, merge for similarities in targets
-target_gene_overlap_56 <- merge(deg_56_up, gene_targets_unique_df_56, by = "gene_name")
-View(target_gene_overlap_56)
+target_gene_overlap_DESEQ2_56 <- merge(deg_56_up, gene_targets_unique, by = "gene_name")
+View(target_gene_overlap_DESEQ2_56)
+write.csv(target_gene_overlap_DESEQ2_56, file = "C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\target_gene_overlap_DESEQ2_56.csv")
 
 ```
+
+```{r}
+Limma_Drug_Targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\rhub_limma_launcheddrugs_39.csv")
+#separate gene targets into individual rows
+Limma_Drug_Targets <- tidyr::separate_rows(Limma_Drug_Targets, Target, sep = ", ")
+#remove drugs with empty 'target' field
+Limma_Drug_Targets <- dplyr::filter(Limma_Drug_Targets, Target != "")
+#Make new dataframe of just drug and gene name
+Limma_Drug_Targets_unique <- data.frame(Limma_Drug_Targets$pert, Limma_Drug_Targets$Target)
+#rename for merging function
+Limma_Drug_Targets_unique <- setNames(Limma_Drug_Targets_unique, c("Drug", "gene_name"))
+conversion <- as.data.frame(cts_19@elementMetadata)
+conversion$gene_id <- gsub("\\..*", "", conversion$gene_id)
+deg_56_up <- dsq2_56_up
+deg_56_up <- tibble:::rownames_to_column(deg_56_up)
+names(deg_56_up)[1] <- "gene_id"
+deg_56_up <- left_join(deg_56_up, conversion, by = "gene_id")
+deg_56_up <- deg_56_up[,!(colnames(deg_56_up) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
+deg_56_up <- dplyr::distinct(deg_56_up, gene_name, .keep_all = TRUE)
+deg_56_up$gene_name <- toupper(deg_56_up$gene_name)
+Limma_target_gene_overlap_DESEQ2_56 <- merge(deg_56_up, Limma_Drug_Targets_unique, by = "gene_name")
+View(Limma_target_gene_overlap_DESEQ2_56)
+write.csv(Limma_target_gene_overlap_DESEQ2_56, file = "C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\Limma_target_gene_overlap_DESEQ2_56.csv")
+```
+
+
+```{r}
+rhub_launched_Drug_Targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\rhub_launcheddrugs_39.csv")
+#separate gene targets into individual rows
+rhub_launched_Drug_Targets <- tidyr::separate_rows(rhub_launched_Drug_Targets, Target, sep = ", ")
+#remove drugs with empty 'target' field
+rhub_launched_Drug_Targets <- dplyr::filter(rhub_launched_Drug_Targets, Target != "")
+#Make new dataframe of just drug and gene name
+Rhub_Launched_Drug_Targets_Unique <- data.frame(rhub_launched_Drug_Targets$pert, rhub_launched_Drug_Targets$Target)
+#rename for merging function
+Rhub_Launched_Drug_Targets_Unique <- setNames(Rhub_Launched_Drug_Targets_Unique, c("Drug", "gene_name"))
+conversion <- as.data.frame(cts_56@elementMetadata)
+conversion$gene_id <- gsub("\\..*", "", conversion$gene_id)
+deg_56_up <- dsq2_56_up
+deg_56_up <- tibble:::rownames_to_column(deg_56_up)
+names(deg_56_up)[1] <- "gene_id"
+deg_56_up <- left_join(deg_56_up, conversion, by = "gene_id")
+deg_56_up <- deg_56_up[,!(colnames(deg_56_up) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
+deg_56_up <- dplyr::distinct(deg_56_up, gene_name, .keep_all = TRUE)
+deg_56_up$gene_name <- toupper(deg_56_up$gene_name)
+rhub_target_gene_overlap_DESEQ2_56 <- merge(deg_56_up, Rhub_Launched_Drug_Targets_Unique, by = "gene_name")
+View(rhub_target_gene_overlap_DESEQ2_56)
+write.csv(rhub_target_gene_overlap_DESEQ2_56, file = "C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\rhub_target_gene_overlap_DESEQ2_56.csv")
+```
+
+
+
+
+
 
 
 
