@@ -41,24 +41,24 @@ Create plot_CM graph
 ```{r}
 plot_CM(pval_mat_up3)
 ```
-GSEA Run Database 2
+GSEA Run Database 3
 ```{r}
 pkd_tf_gsea_database3<- GSEA_run(alldegs3_table$Genes, alldegs3_table$log2FoldChange, chip_index3, get.RES = TRUE)
 TF.highlight3 <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3")
 names(TF.highlight3) <- c("EZH2", "SUZ12", "FOXM1", "NONO", "EP300", "E2F4", "CEBPB", "JUND", "RNF2", "STAT3")
 col <- c("#fde725", "#b5de2b","#6ece58", "#35b779", "#1f9e89", "#26828e", "#31688e", "#3e4989", "#482878", "#440154")
 Database3_plot <- plot_ES(pkd_tf_gsea_database3, LFC = alldegs3_table$log2FoldChange, specialTF = TF.highlight3, TF_colors = col, plot_title = "Transcription Factor Enrichment: Cystic P28")
-Database3_plot<- Database3_plot %>% add_annotations(x=3136, y=0.38300, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=3380, y=0.39488, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=3143, y=0.36200, xref= "x", yref= "y", text = "SUZ12", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=4314, y=0.36919, xref= "x", yref= "y", text = "FOXM1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=3410, y=0.35201, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 4))
-Database3_plot<- Database3_plot %>% add_annotations(x=4055, y=0.34615, xref= "x", yref= "y", text = "E2F4", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=3300, y=0.3250, xref= "x", yref= "y", text = "RNF2", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
-Database3_plot<- Database3_plot %>% add_annotations(x=4112, y=0.31919, xref= "x", yref= "y", text = "JUND", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=4600, y=0.32818, xref= "x", yref= "y", text = "EP300", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 6))
-Database3_plot<- Database3_plot %>% add_annotations(x=4004, y=0.30632, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
-Database3_plot<- Database3_plot %>% add_annotations(x=3700, y=0.29722, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 5))
+Database3_plot<- Database3_plot %>% add_annotations(x=3136, y=0.38300, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=20, ay= -25)
+Database3_plot<- Database3_plot %>% add_annotations(x=3380, y=0.39488, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=35, ay= -5)
+Database3_plot<- Database3_plot %>% add_annotations(x=3143, y=0.36200, xref= "x", yref= "y", text = "SUZ12", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=26, ay= 15)
+Database3_plot<- Database3_plot %>% add_annotations(x=4314, y=0.36919, xref= "x", yref= "y", text = "FOXM1", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=37, ay= 4)
+Database3_plot<- Database3_plot %>% add_annotations(x=3430, y=0.35201, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=20, ay= -10)
+Database3_plot<- Database3_plot %>% add_annotations(x=4055, y=0.34615, xref= "x", yref= "y", text = "E2F4", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=25, ay= -17)
+Database3_plot<- Database3_plot %>% add_annotations(x=3398, y=0.31706, xref= "x", yref= "y", text = "RNF2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=16, ay= 30)
+Database3_plot<- Database3_plot %>% add_annotations(x=4112, y=0.31960, xref= "x", yref= "y", text = "JUND", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=35, ay= 9)
+Database3_plot<- Database3_plot %>% add_annotations(x=4600, y=0.32818, xref= "x", yref= "y", text = "EP300", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=10, ay= 3)
+Database3_plot<- Database3_plot %>% add_annotations(x=4004, y=0.30632, xref= "x", yref= "y", text = "EP300", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 9), ax=25, ay= 11)
+Database3_plot<- Database3_plot %>% add_annotations(x=3720, y=0.29722, xref= "x", yref= "y", text = "EZH2", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=48, ay= 21)
 
 Database3_plot
 ```
