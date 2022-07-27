@@ -1,10 +1,10 @@
 ---
-title: "Working_GSEA_RUN"
+title: "Working_GSEA_RUN_Pre_Cyst"
 author: "Ryan Brownlee"
 date: '2022-06-23'
 output: html_document
 ---
-Libraries 
+Load Libraries 
 ```{r}
 library(TFEA.ChIP)
 library(DESeq2)
@@ -12,23 +12,26 @@ library(biomaRt)
 library(dplyr)
 library(plotly)
 ```
+
 Load in vignette data
+#This is just if you want to test the vignette if getting used to TFEA.ChIP
+
 ```{r}
 data( "hypoxia_DESeq", "hypoxia", package="TFEA.ChIP" ) # load example datasets
 hypoxia_table <- preprocessInputData( hypoxia_DESeq )
 head(hypoxia_table)
 ```
-Load in our data
+Load in our Pre-Cyst data
 ```{r}
 alldegs <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/deseq2_fullres_39.csv")
 ```
-Remove NAs from alldegs
+Remove NAs from alldegs object (Our Data)
 ```{r}
-alldegs <- tidyr::drop_na(alldegs, log2FoldChange)
+alldegs <- tidyr::drop_na(alldegs, log2FoldChange) #GSEA_RUN won't work w/o this step.
 ```
+
 ```{r}
-chip_index <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
-chip_index <- get_chip_index( encodeFilter = TRUE )
+chip_index <- get_chip_index( encodeFilter = TRUE ) #GSEA_RUN will compare our dataset to the encode database of transcription factors
 ```
 Mouse to human (ensembl)
 ```{r}
@@ -43,37 +46,52 @@ genes <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id","en
 Merge entrez ID's back with differential expression data
 ```{r}
 entrezdegs <- merge(degs_hom, genes, by.x = "Gene.stable.ID", by.y = "ensembl_gene_id")
-#remove missing entrez
+#remove NA entrez so GSEA_RUN works
 entrezdegs <- tidyr::drop_na(entrezdegs, entrezgene_id)
 ```
 GSEA_run with pkd data
 ```{r}
-#sort by log fold change for gsea
+#sort by highest log fold change to lowest for gsea
 entrezdegs <- dplyr::arrange(entrezdegs, desc(log2FoldChange))
+#Data is ready for GSEA_RUN. Must include entrezID, log2FoldChange, and the chip index set earlier.
 pkd_tf_gsea <- GSEA_run(as.character(entrezdegs$entrezgene_id), entrezdegs$log2FoldChange, chip_index, get.RES = TRUE)
 ```
 Visualization-pkd data
 ```{r}
-TF.highlight <- c("SMARCE1", "E2F4")
-names(TF.highlight) <- c("SMARCE1", "E2F4")
-col <- c("#5ec962", "#440154")
-Test_plot<- plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight, TF_colors = col, plot_title = "Transcription Factor Enrichment: Pre-Cystic")
-Test_plot<- Test_plot %>% add_annotations(x=2800, y=0.46985, xref= "x", yref= "y", xanchor='right', text = "SMARCE1", showarrow = T, arrowhead = 3, arrowsize = .5)
-Test_plot<- Test_plot %>% add_annotations(x=3943, y=0.42385, xref= "x", yref= "y", xanchor='left', text = "E2F4", showarrow = T, arrowhead = 3, arrowsize = .5)
-Test_plot<- Test_plot %>% add_annotations(x=4361, y=0.35806, xref= "x", yref= "y", text = "E2F4", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .5)
-Test_plot
+#First highlight the significant TFs using TF.highlight. This adds them to the figure legend.
+TF.highlight1 <- c("SMARCE1", "E2F4")
+#gives the TFs a name for figure legend
+names(TF.highlight1) <- c("SMARCE1", "E2F4")
+#Sets the viridis colors of the plot. Must be one color code per highlighted TF above. If it doesn't match, will not plot.
+col1 <- c("#5ec962", "#440154")
+#Scatterplot of the GSEA_RUN results. 
+Pre_Cyst_Plot<- plot_ES( pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, specialTF = TF.highlight1, TF_colors = col1, plot_title = "Transcription Factor Enrichment: Pre-Cystic")
+#Significant TFs that were highlighted earlier now need labels. This step adds a label at the approximate location of each of the highlighted TFs.
+Pre_Cyst_Plot<- Pre_Cyst_Plot %>% add_annotations(x=2800, y=0.46985, xref= "x", yref= "y", xanchor='right', text = "SMARCE1", showarrow = T, arrowhead = 3, arrowsize = .5)
+Pre_Cyst_Plot<- Pre_Cyst_Plot %>% add_annotations(x=3943, y=0.42385, xref= "x", yref= "y", xanchor='left', text = "E2F4", showarrow = T, arrowhead = 3, arrowsize = .5)
+Pre_Cyst_Plot<- Pre_Cyst_Plot %>% add_annotations(x=4361, y=0.35806, xref= "x", yref= "y", text = "E2F4", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .5)
+#Shows the Plot on Viewer
+Pre_Cyst_Plot
 ```
 Visualize plot_RES
 ```{r}
+#Another way to view the results. Function plots a line plot of ES and log2FoldChange
+#I chose to plot only the significant TFs. Must include the accession label which can be taken from the scatterplot.
 plot_RES(GSEA_result = pkd_tf_gsea, LFC = entrezdegs$log2FoldChange, TF = c("SMARCE1", "E2F4"), Accession = c("ENCSR968QDP.SMARCE1.Hep-G2", "ENCSR000DYY.E2F4.GM12878", "ENCSR000EVL.E2F4.HeLa-S3"))
 ```
-
+#Check for gene target Overlaps for  drug list
 ```{r}
+#Filter for significant enrichment scores
 pkd_tf_gsea_database1_pvalues <- dplyr::filter(pkd_tf_gsea$Enrichment.table, pval.adj < 0.05)
+#Remove Unneeded columns
 pkd_tf_gsea_database1_pvalues <- pkd_tf_gsea_database1_pvalues[,!(colnames(pkd_tf_gsea_database1_pvalues) %in% c("Accession", "Cell", "Treatment", "Arg.ES", "p.val"))]
+#Get rid of repeating TFs
 pkd_tf_gsea_database1_pvalues <- dplyr::distinct(pkd_tf_gsea_database1_pvalues, TF, .keep_all = TRUE)
+#Create a new object and make it a dataframe
 gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
+#Rename columns to match GSEA result column names
 gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
+#merge for matches
 target_gene_overlap_TFEA_39 <- merge(pkd_tf_gsea_database1_pvalues, gene_targets_unique_df_TFEA, by = "TF")
 View(target_gene_overlap_TFEA_39)
 ```
@@ -86,3 +104,4 @@ R.Version()
 installed.packages()
 [names(sessionInfo()$otherPkgs), "Version"}]
 ```
+
