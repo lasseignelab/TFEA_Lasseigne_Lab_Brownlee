@@ -1,5 +1,5 @@
 ---
-title: "DESEQ2_DATASET1"
+title: "DESEQ2_PRE_CYST"
 author: "Ryan Brownlee"
 date: '2022-06-30'
 output: html_document
@@ -177,20 +177,10 @@ It is more useful visualize the MA-plot for the shrunken log2 fold changes, whic
 plotMA(resLFC_nf, ylim=c(-2,2))
 ```
 
-PCA
+Create PCA Plot
 ```{r}
 #Plot PCA
 plotPCA(rld_nf, intgroup=c("Genotype")) + geom_label_repel(aes(label = rld_nf@colData@rownames), box.padding   = 0.15, label.padding = 0.15, point.padding = 0.3, segment.color = 'grey50') + scale_colour_viridis_d() + theme(axis.title.x = element_text(size = 20)) + theme_minimal()
-
-#PCATOOLS ATTEMPT
-newdf <- rownames(cts_39)
-newdf <- mapIds(org.Mm.eg.db, cts_39@NAMES, keytype = "ENSEMBL", column = "SYMBOL", multiVals = "first")
-newdf <- newdf[!is.na(newdf)]
-newdf <- newdf[match(rownames(cts_39), names(newdf))]
-rownames(cts_39) <- newdf
-keep <- !is.na(rownames(cts_39))
-cts_39 <- cts_39[keep,]
-dds <- DESeqDataSet(cts_39, design = ~ cell + dex)
 
 ```
 
@@ -241,82 +231,105 @@ Orthologous mapping highest weighted genes in PC1
 #hom_pc1DOWN <- convertMouseGeneList(rownames(genesPC1_DOWN))
 ```
 
-Heatmap plotting:
-#Top 20 LFC
+Heatmap plotting
 ```{r}
+#Call in pheatmap package
 library(pheatmap)
 #formatting for pheatmap
+#Gene_name and Gene ID dataframe for merging
 conversion <- as.data.frame(cts_39@elementMetadata)
+#Remove .# after ENMUSG names
 conversion$gene_id <- gsub("\\..*", "", conversion$gene_id)
+#retrieve counts data and ENMUSG #
 cts_df <- as.data.frame(assays((rld_nf)))
+#gene_id into a column
 cts_df <- tibble:::rownames_to_column(cts_df, var = "gene_id")
-
+#Merge gene symbols into counts and gene ID
 conv_cts <- merge(cts_df, conversion, by = "gene_id")
+#Remove unnecessary data
 conv_cts <- conv_cts[,!(colnames(conv_cts) %in% c("gene_id", "group", "group_name"))]
+#Filter out repeating data
 conv_cts <- dplyr::distinct(conv_cts, gene_name, .keep_all = TRUE)
+#Convert back to rownames but with gene symbols
 conv_cts <- tibble:::column_to_rownames(conv_cts, "gene_name")
+#Rename the count data to correspond with experimental group or control
 colnames(conv_cts) <- c("WT", "WT", "WT", "PKD2", "PKD2", "PKD2", "Ift88", "Ift88", "Ift88")
+#convert 0's to NA's for removal
 conv_cts[conv_cts==0] <- NA
+#Remove all rows with NA's so that we can analyze them w/o error
 conv_cts_fixed <- conv_cts[complete.cases(conv_cts),]
 #conv_cts <- round(conv_cts)
 
 #need to convert the gene IDs here also
 #genes <- order(resLFC_nf$log2FoldChange, decreasing=TRUE)[1:20]
 
-#top20 genes w/ conv_cts
-fixedtop20 <- order(conv_cts_fixed$PKD2, decreasing = TRUE)[1:20]
+#top20 genes Pre-Cyst
+fixedtop20_Pre_Cyst <- order(conv_cts_fixed$PKD2, decreasing = TRUE)[1:20]
 #fixedtop20test <- order(conv_cts_fixed, decreasing= TRUE)[1:20]
-pheatmap(conv_cts_fixed[fixedtop20, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive Genes '39", angle_col = 45)
 
-#bottom 20 genes w/ conv_cts
-fixedbottom20 <- order(conv_cts_fixed$PKD2, decreasing = FALSE)[1:20]
-pheatmap(conv_cts_fixed[fixedbottom20, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Bottom 20 Positive LFC", angle_col = 45)
+#Create heatmap with viridis colors
+pheatmap(conv_cts_fixed[fixedtop20_Pre_Cyst, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive Genes Pre-Cyst", angle_col = 45)
 
+#bottom 20 genes Pre-Cyst
+fixedbottom20_Pre_cyst <- order(conv_cts_fixed$PKD2, decreasing = FALSE)[1:20]
+pheatmap(conv_cts_fixed[fixedbottom20_Pre_cyst, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Bottom 20 Positive Genes Pre-Cyst", angle_col = 45)
+
+#Create a heatmap of most varied genes
 #sort by variance
-test <- apply(conv_cts, 1, var)
+Pre_Cyst_Variance <- apply(conv_cts, 1, var)
 #top 20 most variable genes
-top <- names(sort(test, decreasing = TRUE))[1:20]
+top20_pre_cyst_variable <- names(sort(Pre_Cyst_Variance, decreasing = TRUE))[1:20]
 #create heatmap
-pheatmap(conv_cts[top,], cluster_rows=TRUE, cluster_cols=TRUE, show_rownames=TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied Genes '39", angle_col = 45) #, annotation_col=meta_39$Genotype)
+pheatmap(conv_cts[top20_pre_cyst_variable,], cluster_rows=TRUE, cluster_cols=TRUE, show_rownames=TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied Genes Pre-Cyst", angle_col = 45) #, annotation_col=meta_39$Genotype)
            
    #heatmap w/o gene symbols 20 greatest genes
 genestop20 <- order(resLFC_nf$log2FoldChange, decreasing = TRUE)[1:20]
-pheatmap(assay(cts_39)[genestop20, ], cluster_rows = TRUE, show_rownames = TRUE, cluster_cols = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Greatest LFC Genes '39", angle_col = 45)
+pheatmap(assay(cts_39)[genestop20, ], cluster_rows = TRUE, show_rownames = TRUE, cluster_cols = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive Genes Pre-Cyst", angle_col = 45)
 
 #Heatmap w/o gene symbols 20 lowest genes
 genesbottom20 <- order((resLFC_nf$log2FoldChange), decreasing = FALSE)[1:20]
-pheatmap(assay(cts_39)[genesbottom20, ], cluster_rows = TRUE, show_rownames = TRUE, cluster_cols = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Lowest LFC Genes", angle_col = 45)
+pheatmap(assay(cts_39)[genesbottom20, ], cluster_rows = TRUE, show_rownames = TRUE, cluster_cols = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Bottom 20 Positive Genes Pre-Cyst", angle_col = 45)
 ```
 #heatmaps w/o IFT88
 ```{r}
+#New object w/o IFT88
 conv_cts_fixed_newheat <- conv_cts_fixed[,!(colnames(conv_cts_fixed) %in% c("Ift88"))]
+#rename columns
 colnames(conv_cts_fixed_newheat) <- c("WT", "WT", "WT", "PKD2", "PKD2", "PKD2")
-#top20 genes w/ conv_cts
+#top20 genes Pre-Cyst w/o IFT88
 fixedtop20 <- order(conv_cts_fixed_newheat$PKD2, decreasing = TRUE)[1:20]
 #fixedtop20test <- order(conv_cts_fixed, decreasing= TRUE)[1:20]
 pheatmap(conv_cts_fixed_newheat[fixedtop20, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Top 20 Positive Genes '39", angle_col = 45)
 
-#bottom 20 genes w/ conv_cts
+#bottom 20 genes Pre-Cyst w/o IFT88
 fixedbottom20 <- order(conv_cts_fixed_newheat$PKD2, decreasing = FALSE)[1:20]
 pheatmap(conv_cts_fixed_newheat[fixedbottom20, ], cluster_rows = TRUE, cluster_cols = TRUE, show_rownames = TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "Bottom 20 Positive Genes '39", angle_col = 45)
 
+Create a heatmap of most varied genes
 #sort by variance
-test <- apply(conv_cts, 1, var)
+Pre_Cyst_Variance <- apply(conv_cts, 1, var)
 #top 20 most variable genes
-top <- names(sort(test, decreasing = TRUE))[1:20]
+top20_pre_cyst_variable <- names(sort(Pre_Cyst_Variance, decreasing = TRUE))[1:20]
 #create heatmap
+#create heatmap Pre-Cyst w/o IFT88
 pheatmap(conv_cts_fixed_newheat[top,], cluster_rows=TRUE, cluster_cols=TRUE, show_rownames=TRUE, color = viridis(n= 10000, alpha = 1, begin = 0, end = 1, option = "viridis"), border_color = "NA", main = "20 Most Varied Genes Pre-Cyst", angle_col = 45) #, annotation_col=meta_39$Genotype)
 ```
 
 
-Plotting alluvial plot
+Plotting alluvial plot for drug matching
 ```{r}
+#Load in drug target list
 gene_targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\gene_drug_targets_39.csv")
+#Extract drug and target columns
 gene_target_alluvial <- gene_targets[,c(2,19)]
+#Keep rows of drugs and targets that matched dataset results
 gene_target_alluvial <- gene_target_alluvial[c(1,5,15,16,25,49,51,59,62,63,71,76,84,90,93,99,114,116,123,132,144,151,157),]
+#Rename column "pert" to "Drug"
 names(gene_target_alluvial)[1] <- "Drug"
+#Recall packages for alluvial plotting
 library(ggplot2)
 library(ggalluvial)
+#Create alluvial plot w/ viridis colors
 target_alluvial_plot <- ggplot(data = gene_target_alluvial, aes(axis1 = Drug, axis2 = Target)) +
   geom_alluvium(color = "black", aes(fill = Target )) + # , colour = trend)) + 
   geom_stratum(width = 3/12, color = "black") + #the border of the stratum
@@ -326,52 +339,70 @@ target_alluvial_plot <- ggplot(data = gene_target_alluvial, aes(axis1 = Drug, ax
   geom_text(stat = "stratum", size = 3.5, fontface = "bold", aes(label = after_stat(stratum))) +
   labs(title = "Drug Target Matches") +
   theme_void() 
+#View alluvial plot
 target_alluvial_plot
 
 ```
-#Individual Gene Targets
-```{r}
-individual_test <- plotCounts(dds_39, gene = "Ckb", intgroup = "Genotype", returnData = TRUE) 
-```
 
 ```{r}
-#volcano plotting
+Volcano plots
+#Install enhanced volcano
  if (!requireNamespace('BiocManager', quietly = TRUE))
     install.packages('BiocManager')
 
   BiocManager::install('EnhancedVolcano')
+  #Recall enhancedvoclano
   library(EnhancedVolcano)
+  #Plot a basic volcano plot
   EnhancedVolcano(res_nf, lab = rownames(res_nf), x = 'log2FoldChange', y = 'pvalue', pCutoff = 10e-32, FCcutoff = 0.5, pointSize = 3.0, labSize = 6.0)
-  
+  #Set up data for Pre-Cyst Volcano Plot
 TopT <- as.data.frame(res_nf)
+#ENMUSG names to columns
 TopT_test <- tibble:::rownames_to_column(TopT)
+#Rename column of ENMSUG names
 names(TopT_test)[1] <- "gene_id"
+#Merge gene symbol into dataframe
 TopT_finish <- left_join(TopT_test, conversion, by = "gene_id")
+#ommit NA's
 TopT_finish <- na.omit(TopT_finish)
+#remove unneeded columns
 TopT_finish <- TopT_finish[,!(colnames(TopT_finish) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
+#Remove all repetitive rows
 TopT_finish <- dplyr::distinct(TopT_finish, gene_name, .keep_all = TRUE)
+#gene symbols to rownames
 TopT_finish <- tibble:::column_to_rownames(TopT_finish, "gene_name")
 
 View(TopT_finish)
+
 #volcano plot w/ strict pvalue cutoff
 EnhancedVolcano(TopT_finish, lab = rownames(TopT_finish), x = 'log2FoldChange', y = 'pvalue', pCutoff = 10e-32, FCcutoff = 0.5, pointSize = 3.0, labSize = 6.0, col = c("#440154", "#21918c", "#5ec962", "#fde725"))
-#basic volcano plot
+#volcano plot w/ normal cutoffs and viridis colors
 EnhancedVolcano(TopT_finish, lab = rownames(TopT_finish), x = 'log2FoldChange', y = 'pvalue', pointSize = 3.0, labSize = 4.0, col = c("#440154", "#21918c", "#5ec962", "#fde725"))
 ```
 
 ```{r}
 # Read in Drug Targets
 gene_targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\gene_drug_targets_39.csv")
+#New dataframe with drug and Target
 gene_targets_unique <- data.frame(gene_targets$pert, gene_targets$Target)
+#Rename columns
 gene_targets_unique <- setNames(gene_targets_unique, c("Drug", "gene_name"))
 #Check for DEG drug targets
+#Dataframe w/ gene symbol and ENMUSG ID
 conversion <- as.data.frame(cts_39@elementMetadata)
+#Remove .#'s following ENMUSG
 conversion$gene_id <- gsub("\\..*", "", conversion$gene_id)
+#dataframe of LFC >2 from results
 deg_39_up <- dsq2_39_up
+#ENMUSG to column
 deg_39_up <- tibble:::rownames_to_column(deg_39_up)
+#rename column
 names(deg_39_up)[1] <- "gene_id"
+#merge gene symbols into dataframe
 deg_39_up <- left_join(deg_39_up, conversion, by = "gene_id")
+#remove unneeded columns
 deg_39_up <- deg_39_up[,!(colnames(deg_39_up) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
+#remove repeated symbols
 deg_39_up <- dplyr::distinct(deg_39_up, gene_name, .keep_all = TRUE)
 #deg_39_up <- tibble:::column_to_rownames(deg_39_up, "gene_name")
 
@@ -380,10 +411,11 @@ deg_39_up$gene_name <- toupper(deg_39_up$gene_name)
 #now fixed, merge for similarities in targets
 target_gene_overlap_DESEQ2_39 <- merge(deg_39_up, gene_targets_unique, by = "gene_name")
 View(target_gene_overlap_DESEQ2_39)
+#save to file
 write.csv(target_gene_overlap_DESEQ2_39, file = "C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\target_gene_overlap_DESEQ2_39.csv")
 ```
 
-
+#Check for Limma Drug Targets
 ```{r}
 Limma_Drug_Targets <- read.csv("C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\rhub_limma_launcheddrugs_39.csv")
 #separate gene targets into individual rows
@@ -394,17 +426,28 @@ Limma_Drug_Targets <- dplyr::filter(Limma_Drug_Targets, Target != "")
 Limma_Drug_Targets_unique <- data.frame(Limma_Drug_Targets$pert, Limma_Drug_Targets$Target)
 #rename for merging function
 Limma_Drug_Targets_unique <- setNames(Limma_Drug_Targets_unique, c("Drug", "gene_name"))
+#dataframe of gene ID and symbols
 conversion <- as.data.frame(cts_39@elementMetadata)
+#remove .#'s from ENMUSG ID's
 conversion$gene_id <- gsub("\\..*", "", conversion$gene_id)
+#new object for LFC>2 results
 deg_39_up <- dsq2_39_up
+#ENMSUG to columns
 deg_39_up <- tibble:::rownames_to_column(deg_39_up)
+#Rename column
 names(deg_39_up)[1] <- "gene_id"
+#merge gene ID and gene symbols
 deg_39_up <- left_join(deg_39_up, conversion, by = "gene_id")
+#remove unnneeded columns
 deg_39_up <- deg_39_up[,!(colnames(deg_39_up) %in% c("gene_id", "baseMean", "lfcSE", "stat"))]
+#remove repeated symbols
 deg_39_up <- dplyr::distinct(deg_39_up, gene_name, .keep_all = TRUE)
+#fix lowercase gene symbols
 deg_39_up$gene_name <- toupper(deg_39_up$gene_name)
+#merge for target and drug matches
 Limma_target_gene_overlap_DESEQ2_39 <- merge(deg_39_up, Limma_Drug_Targets_unique, by = "gene_name")
 View(Limma_target_gene_overlap_DESEQ2_39)
+#save to PC
 write.csv(Limma_target_gene_overlap_DESEQ2_39, file = "C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\Limma_target_gene_overlap_DESEQ2_39.csv")
 ```
 
@@ -419,6 +462,7 @@ rhub_launched_Drug_Targets <- dplyr::filter(rhub_launched_Drug_Targets, Target !
 Rhub_Launched_Drug_Targets_Unique <- data.frame(rhub_launched_Drug_Targets$pert, rhub_launched_Drug_Targets$Target)
 #rename for merging function
 Rhub_Launched_Drug_Targets_Unique <- setNames(Rhub_Launched_Drug_Targets_Unique, c("Drug", "gene_name"))
+#Same process as mentioned above. refer to previous annotations.
 conversion <- as.data.frame(cts_39@elementMetadata)
 conversion$gene_id <- gsub("\\..*", "", conversion$gene_id)
 deg_39_up <- dsq2_39_up
@@ -433,6 +477,18 @@ View(rhub_target_gene_overlap_DESEQ2_39)
 write.csv(rhub_target_gene_overlap_DESEQ2_39, file = "C:\\Users\\mattr\\Documents\\Lasseigne_Lab_KURE\\TFEA_Lasseigne_Lab_Brownlee\\rhub_target_gene_overlap_DESEQ2_39.csv")
 ```
 
+
+
+
+#### Versions  
+```{r}
+R.Version()
+```
+
+
+```{r}
+installed.packages()[names(sessionInfo()$otherPkgs), "Version"]
+```
 
 
 
