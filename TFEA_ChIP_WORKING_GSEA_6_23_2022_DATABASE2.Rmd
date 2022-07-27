@@ -1,5 +1,5 @@
 ---
-title: "TFEA_ChIP_WORKING_GSEA_database2"
+title: "TFEA_ChIP_WORKING_GSEA_Post_Cyst_P28"
 author: "Ryan Brownlee"
 date: '2022-06-24'
 output: html_document
@@ -13,33 +13,39 @@ library(DESeq2)
 library(biomaRt)
 ```
 
-Load in vignette data
+Load in vignette data 
+#This is just if you want to test the vignette if getting used to TFEA.ChIP
 ```{r}
 data( "hypoxia_DESeq", "hypoxia", package="TFEA.ChIP" ) # load example datasets
 hypoxia_table <- preprocessInputData( hypoxia_DESeq )
 head(hypoxia_table)
 ```
-Load in our data
+Load in our Post-Cyst P28 data
 ```{r}
 alldegs2 <- read.csv("/Users/mattr/Documents/Lasseigne_Lab_KURE/deseq2_fullres_19_database2.csv")
 ```
-Remove NAs from alldegs
+#Remove NAs from alldegs
 ```{r}
 alldegs2 <- tidyr::drop_na(alldegs2, log2FoldChange)
+#Drop unneeded columns of data
 alldegs2<- alldegs2[-c(5,6,7)]
 ```
 
 ```{r}
-chip_index2 <- get_chip_index( TFfilter = c( "HIF1A","EPAS1","ARNT" ) )
 chip_index2 <- get_chip_index( encodeFilter = TRUE )
 ```
 Run TF Ranking
 ```{r}
+#Sorts by decreasing log2FoldChange
 alldegs2_table <- preprocessInputData(alldegs2)
+#Selects for genes w/ >1 LFC
 Genes.Upreg2 <- Select_genes(alldegs2_table, min_LFC = 1)
+#Selects for gene control group
 Genes.Control2 <- Select_genes(alldegs2_table, min_pval = 0.5, max_pval = 1, min_LFC = -0.25, max_LFC = 0.25)
+#Creates contingency tables
 CM_list_UP2 <- contingency_matrix(Genes.Upreg2, Genes.Control2)
 pval_mat_up2<- getCMstats(CM_list_UP2)
+#Ranks the TFs and creates a plot of ES and rank
 TF_ranking2 <- rankTFs(pval_mat_up2, rankMethod = "gsea", makePlot = TRUE)
 TF_ranking2[["TFranking_plot"]]
 ```
@@ -48,35 +54,49 @@ Create plot_CM graph
 plot_CM(pval_mat_up2)
 ```
 GSEA Run Database 2
+#Data is ready for GSEA_RUN. Must include entrezID, log2FoldChange, and the chip index set earlier.
 ```{r}
 pkd_tf_gsea_database2<- GSEA_run(alldegs2_table$Genes, alldegs2_table$log2FoldChange, chip_index2, get.RES = TRUE)
-TF.highlight <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "IKZF1", "NONO", "NBN")
-names(TF.highlight) <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "NONO", "IKZF1", "NBN")
+#Highlight significant TFs for color plotting and to put in figure legend
+TF.highlight2 <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "IKZF1", "NONO", "NBN")
+names(TF.highlight2) <- c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12", "NONO", "IKZF1", "NBN")
+#Choose viridis colors; one color code per highlighted TF.
 col <- c("#fde725", "#b5de2b","#6ece58", "#35b779", "#1f9e89", "#26828e", "#31688e", "#3e4989", "#482878", "#440154")
-Database2_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight, TF_colors = col, plot_title = "Transcription Factor Enrichment: Cystic P21")
-Database2_plot<- Database2_plot %>% add_annotations(x=3450, y=0.46402, xref= "x", yref= "y", text = "SOX6", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=18, ay= -10)
-Database2_plot<- Database2_plot %>% add_annotations(x=2880, y=0.43431, xref= "x", yref= "y", text = "PLRG1", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 10), ax=20, ay= -10)
-Database2_plot<- Database2_plot %>% add_annotations(x=3440, y=0.43500, xref= "x", yref= "y", text = "YBX1", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=32, ay= -12)
-Database2_plot<- Database2_plot %>% add_annotations(x=4107, y=0.41200, xref= "x", yref= "y", text = "CUX1", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=30, ay= -8)
-Database2_plot<- Database2_plot %>% add_annotations(x=3425, y=0.41300, xref= "x", yref= "y", text = "EZH2", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 10), ax=36, ay= -17)
-Database2_plot<- Database2_plot %>% add_annotations(x=3260, y=0.40000, xref= "x", yref= "y", text = "EP300", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=15, ay= 2)
-Database2_plot<- Database2_plot %>% add_annotations(x=3425, y=0.388, xref= "x", yref= "y", text = "SUZ12", xanchor='right', showarrow = TRUE, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax= 52, ay= 14)
-Database2_plot<- Database2_plot %>% add_annotations(x=4375, y=0.40700, xref= "x", yref= "y", text = "NONO", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=15, ay= -1)
-Database2_plot<- Database2_plot %>% add_annotations(x=4450, y=0.39222, xref= "x", yref= "y", text = "IKZF1", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=15, ay= 3)
-Database2_plot<- Database2_plot %>% add_annotations(x=4375, y=0.38709, xref= "x", yref= "y", text = "NBN", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=30, ay= 12)
-
+#Scatterplot of the GSEA_RUN results.
+Post_Cyst_P28_plot <- plot_ES(pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, specialTF = TF.highlight2, TF_colors = col, plot_title = "Transcription Factor Enrichment: Cystic P28")
+#Significant TFs that were highlighted earlier now need labels. This step adds a label at the approximate location of each of the highlighted TFs.
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=3450, y=0.46402, xref= "x", yref= "y", text = "SOX6", xanchor='top', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=18, ay= -10)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=2880, y=0.43431, xref= "x", yref= "y", text = "PLRG1", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 10), ax=20, ay= -10)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=3440, y=0.43500, xref= "x", yref= "y", text = "YBX1", xanchor='right', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=32, ay= -12)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=4107, y=0.41200, xref= "x", yref= "y", text = "CUX1", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=30, ay= -8)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=3425, y=0.41300, xref= "x", yref= "y", text = "EZH2", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 10), ax=36, ay= -17)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=3260, y=0.40000, xref= "x", yref= "y", text = "EP300", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=15, ay= 2)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot%>% add_annotations(x=3425, y=0.388, xref= "x", yref= "y", text = "SUZ12", xanchor='right', showarrow = TRUE, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax= 52, ay= 14)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=4375, y=0.40700, xref= "x", yref= "y", text = "NONO", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=15, ay= -1)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=4450, y=0.39222, xref= "x", yref= "y", text = "IKZF1", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = .3, font = list(size = 9), ax=15, ay= 3)
+Post_Cyst_P28_plot<- Post_Cyst_P28_plot %>% add_annotations(x=4375, y=0.38709, xref= "x", yref= "y", text = "NBN", xanchor='left', showarrow = T, arrowhead = 3, arrowsize = 0.3, font = list(size = 10), ax=30, ay= 12)
+#Shows the Plot on Viewer
 Database2_plot
 ```
 Visualize plot_RES
 ```{r}
+#Another way to view the results. Function plots a line plot of ES and log2FoldChange
+#I chose to plot only the significant TFs. Must include the accession label which can be taken from the scatterplot.
 plot_RES(GSEA_result = pkd_tf_gsea_database2, LFC = alldegs2_table$log2FoldChange, TF = c("SOX6", "PLRG1", "YBX1", "CUX1", "EZH2", "EP300", "SUZ12","NONO", "CEBPB", "EBF1", "MEF2A", "RNF2", "RXRA", "JUND", "JUN", "TBLIXR1", "TCF7", "SMC3", "TEAD4", "RAD21", "CTCF", "NFIC", "FOSL2", "SMC3", "GATA2", "STAT5A", "JUND"), Accession = c("ENCSR543BVU.SOX6.Hep-G2", "ENCSR019KPC.PLRG1.Hep-G2", "ENCSR799GOY.YBX1.Hep-G2", "ENCSR205SKQ.YBX1.GM12878", "ENCSR000DYR.CUX1.GM12878", "ENCSR000ARI.EZH2.Hep-G2", "ENCSR000ASY.EZH2.WA01", "ENCSR000DZG.EP300.GM12878", "ENCSR000DZD.EP300.GM12878", "ENCSR000ECV.EP300.HeLa-S3", "ENCSR091BOQ.SUZ12.GM12878", "ENCSR476BQA.NONO.Hep-G2","ENCSR000BRX.CEBPB.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000DZQ.EBF1.GM12878", "ENCSR000BVC.MEF2A.SK-N-SH", "ENCSR784VUY.RNF2.WA01", "ENCSR000BVG.RXRA.SK-N-SH", "ENCSR000BSK.JUND.SK-N-SH", "ENCSR000EDG.JUN.HeLa-S3", "ENCSR000EFA.JUN.endothelial_umbilical-vein", "ENCSR501DKS.TCF7.GM12878", "ENCSR000EDC.STAT3.HeLa-S3", "ENCSR000BUQ.TEAD4.SK-N-SH", "ENCSR635OSG.RAD21.liver", "ENCSR000DLK.CTCF.WA01", "ENCSR000BNH.CTCF.WA01", "ENCSR000ALA.CTCF.endothelial_umbilical-vein", "ENCSR000BRN.NFIC.GM12878", "ENCSR000BVB.FOSL2.SK-N-SH", "ENCSR000DZP.SMC3.GM12878", "ENCSR000EVW.GATA2.endothelial_umbilical-vein", "ENCSR000BMY.RAD21.GM12878", "ENCSR000EAC.RAD21.GM12878", "ENCSR000BQZ.STAT5A.GM12878", "ENCSR000BSK.JUND.SK-N-SH"))
 ```
+#Check for drug target matches
 ```{r}
+#Filter for significant enrichment scores
 pkd_tf_gsea_database2_pvalues <- dplyr::filter(pkd_tf_gsea_database2$Enrichment.table, pval.adj < 0.05)
+#Remove unneeded columns of data
 pkd_tf_gsea_database2_pvalues <- pkd_tf_gsea_database2_pvalues[,!(colnames(pkd_tf_gsea_database2_pvalues) %in% c("Accession", "Cell", "Treatment", "Arg.ES", "p.val"))]
+#remove any redundant TFs
 pkd_tf_gsea_database2_pvalues <- dplyr::distinct(pkd_tf_gsea_database2_pvalues, TF, .keep_all = TRUE)
+#Save new object and create as dataframe
 gene_targets_unique_df_TFEA <- as.data.frame(gene_targets_unique)
+#Set col names to match the GSEA results
 gene_targets_unique_df_TFEA <- setNames(gene_targets_unique_df_TFEA, c("TF"))
+#Merge results to check for targets
 target_gene_overlap_TFEA_19 <- merge(pkd_tf_gsea_database2_pvalues, gene_targets_unique_df_TFEA, by = "TF")
 View(target_gene_overlap_TFEA_19)
 ```
